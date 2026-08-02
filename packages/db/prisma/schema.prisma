@@ -1,0 +1,76 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Pipeline {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  versions  PipelineVersion[]
+}
+
+model PipelineVersion {
+  id         String   @id @default(cuid())
+  pipelineId String
+  pipeline   Pipeline @relation(fields: [pipelineId], references: [id])
+  dagJson    Json      // validated DAG definition
+  createdAt  DateTime @default(now())
+  jobs       Job[]
+  executions Execution[]
+
+  @@index([pipelineId, createdAt])
+}
+
+model Job {
+  id                String   @id @default(cuid())
+  pipelineVersionId String
+  pipelineVersion   PipelineVersion @relation(fields: [pipelineVersionId], references: [id])
+  name              String
+  type              String   // build | test | deploy | docker | script
+  dependsOn         String[] // job ids this job depends on
+  retryPolicy       Json
+
+  @@index([pipelineVersionId])
+}
+
+model Execution {
+  id                String   @id @default(cuid())
+  pipelineVersionId String
+  pipelineVersion   PipelineVersion @relation(fields: [pipelineVersionId], references: [id])
+  status            String   // pending | running | succeeded | failed | cancelled
+  startedAt         DateTime?
+  finishedAt        DateTime?
+  jobExecutions     JobExecution[]
+
+  @@index([pipelineVersionId, status])
+  @@index([status, startedAt])
+}
+
+model JobExecution {
+  id          String   @id @default(cuid())
+  executionId String
+  execution   Execution @relation(fields: [executionId], references: [id])
+  jobId       String
+  workerId    String?
+  status      String
+  attempt     Int      @default(1)
+  startedAt   DateTime?
+  finishedAt  DateTime?
+
+  @@index([executionId, status])
+  @@index([workerId, status])
+}
+
+model Worker {
+  id            String   @id @default(cuid())
+  status        String   // idle | busy | offline
+  lastHeartbeat DateTime
+  capacity      Int
+
+  @@index([status, lastHeartbeat])
+}
