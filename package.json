@@ -1,0 +1,26 @@
+{
+  "name": "devflow-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DevFlow workflow orchestration platform",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "dev": "npm run dev --workspaces --if-present",
+    "db:generate": "npm run db:generate -w @devflow/db",
+    "db:migrate": "npm run db:migrate -w @devflow/db",
+    "db:studio": "npm run db:studio -w @devflow/db"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.24",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.3.3"
+  }
+}
