@@ -218,6 +218,53 @@ app.post('/api/v1/executions/:id/jobs/:jobId/skip', async (req, res) => {
   }
 });
 
+// POST /api/v1/executions/:id/cancel  — cancel running execution and abort active jobs
+app.post('/api/v1/executions/:id/cancel', async (req, res) => {
+  try {
+    const { id: executionId } = req.params;
+
+    const execution = await prisma.execution.findUnique({
+      where: { id: executionId },
+      include: { pipelineVersion: true, jobExecutions: true },
+    });
+    if (!execution) { res.status(404).json({ detail: 'Execution not found' }); return; }
+
+    if (['succeeded', 'failed', 'cancelled'].includes(execution.status)) {
+      res.status(409).json({ detail: `Cannot cancel execution in terminal status: ${execution.status}` });
+      return;
+    }
+
+    // Mark execution cancelled
+    await prisma.execution.update({
+      where: { id: executionId },
+      data: { status: 'cancelled', finishedAt: new Date() },
+    });
+
+    // Mark non-terminal job executions cancelled
+    await prisma.jobExecution.updateMany({
+      where: { executionId, status: { in: ['pending', 'running', 'retrying'] } },
+      data: { status: 'cancelled', finishedAt: new Date() },
+    });
+
+    // Publish execution.completed (cancelled) event to Redis Stream
+    await redisClient.xadd(
+      'job-events', '*', 'payload',
+      JSON.stringify({
+        type: 'execution.completed',
+        pipelineId: execution.pipelineVersion.pipelineId,
+        executionId,
+        status: 'cancelled',
+        sequence: Date.now(),
+        timestamp: new Date().toISOString(),
+      })
+    );
+
+    res.json({ message: 'Execution cancelled', executionId, status: 'cancelled' });
+  } catch (e: any) {
+    res.status(500).json({ detail: e.message });
+  }
+});
+
 // POST /api/v1/executions/:id/restart  — restart entire execution from scratch
 app.post('/api/v1/executions/:id/restart', async (req, res) => {
   try {

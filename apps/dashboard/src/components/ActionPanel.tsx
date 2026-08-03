@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { RotateCcw, SkipForward, RefreshCw, ChevronDown, ChevronUp, Bot, AlertTriangle, Lightbulb } from 'lucide-react';
-import { retryJob, skipJob, restartExecution, fetchAiAnalysis } from '../api';
+import { RotateCcw, SkipForward, RefreshCw, ChevronDown, ChevronUp, Bot, AlertTriangle, Lightbulb, Ban } from 'lucide-react';
+import { retryJob, skipJob, restartExecution, cancelExecution, fetchAiAnalysis } from '../api';
 
 interface JobExecution {
   id: string;
@@ -136,7 +136,7 @@ export default function ActionPanel({ executionId, jobExecutions, onActionDone }
         </span>
       </button>
 
-      {/* Restart execution button */}
+      {/* Restart & Cancel execution buttons */}
       <div style={{ padding: '0 12px 10px', borderBottom: '1px solid var(--border)', display: 'flex', gap: 8 }}>
         <motion.button
           className="btn btn-ghost"
@@ -152,6 +152,22 @@ export default function ActionPanel({ executionId, jobExecutions, onActionDone }
             </motion.span>
           ) : <RotateCcw size={12} />}
           Restart All
+        </motion.button>
+
+        <motion.button
+          className="btn btn-ghost"
+          style={{ fontSize: 12, padding: '5px 12px', gap: 5, color: '#ef4444' }}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          disabled={loading === 'cancel'}
+          onClick={() => handle(() => cancelExecution(executionId), 'cancel')}
+        >
+          {loading === 'cancel' ? (
+            <motion.span animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}>
+              <RefreshCw size={12} />
+            </motion.span>
+          ) : <Ban size={12} />}
+          Cancel Run
         </motion.button>
       </div>
 

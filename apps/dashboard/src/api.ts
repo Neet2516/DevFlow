@@ -52,10 +52,19 @@ export async function restartExecution(executionId: string): Promise<any> {
   return res.json();
 }
 
+export async function cancelExecution(executionId: string): Promise<any> {
+  const res = await fetch(`${BASE}/api/v1/executions/${executionId}/cancel`, {
+    method: 'POST',
+  });
+  if (!res.ok) throw new Error('Failed to cancel execution');
+  return res.json();
+}
+
 export async function fetchAiAnalysis(executionId: string): Promise<any> {
   const res = await fetch(`${BASE}/api/v1/executions/${executionId}/analysis`);
   if (!res.ok) return null;
   return res.json();
 }
+
 
 

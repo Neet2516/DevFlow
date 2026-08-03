@@ -80,12 +80,14 @@ DevFlow/
 - Built `services/audit` (Event Bus consumer for compliance audit trail, `GET /api/v1/audit`).
 - Implemented Pipeline Variable Injection Engine in `services/execution` (`startExecution.ts`).
 - Built Automated Secret Redaction Engine in `apps/worker` (`WorkerRuntime` log flusher).
+- Built Execution Cancellation Engine in `services/execution` (`POST /api/v1/executions/:id/cancel` updates status to `cancelled`, aborts pending/running jobs, and emits `execution.completed` event).
+- Added Cancel Run action control with Ban icon in Dashboard `ActionPanel` UI.
 - Built `diffDag` Engine in `@devflow/graph-engine` (computes added, removed, and modified jobs across pipeline versions).
 - Built Performance Analytics API (`GET /api/v1/analytics/performance`) in `services/execution` (calculates execution throughput, step latencies, success rates).
 - Integrated Tailwind CSS v3 & Autoprefixer engine in `@devflow/dashboard` with Vite PostCSS pipeline.
 - Refactored UI components (`DagNode`, `LogPanel`, `ActionPanel`, `Header`) with Tailwind utility classes.
 - Added `docker-compose.prod.yml` and Prometheus / Grafana provisioning.
-- Verified 31/31 Jest integration & unit tests (`pipeline.test.mjs`, `ai_analyzer.test.mjs`, `github_webhook.test.mjs`, `templates_redaction.test.mjs`, `analytics_diff.test.mjs`).
+- Verified 33/33 Jest integration & unit tests (`pipeline.test.mjs`, `ai_analyzer.test.mjs`, `github_webhook.test.mjs`, `templates_redaction.test.mjs`, `analytics_diff.test.mjs`, `cancellation.test.mjs`).
 - Verified Multi-Job E2E suite (`tests/e2e/multi_job_e2e.js`) and Chaos Recovery suite (`tests/e2e/chaos_recovery_test.js`) with 100% clean passes.
 
 ---
