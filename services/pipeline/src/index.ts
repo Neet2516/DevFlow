@@ -15,6 +15,18 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', service: 'pipeline' });
 });
 
+// Prometheus metrics endpoint (scrape target for Grafana/Prometheus)
+app.get('/metrics', async (_req, res) => {
+  try {
+    // Import dynamically to avoid circular dep before full build
+    const { registry } = await import('@devflow/metrics');
+    res.set('Content-Type', registry.contentType);
+    res.end(await registry.metrics());
+  } catch {
+    res.status(500).send('metrics unavailable');
+  }
+});
+
 // Create Pipeline
 app.post('/api/v1/pipelines', async (req, res) => {
   try {

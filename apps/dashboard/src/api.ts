@@ -27,3 +27,28 @@ export async function triggerExecution(pipelineId: string): Promise<{ executionI
   if (!res.ok) throw new Error('Failed to trigger execution');
   return res.json();
 }
+
+export async function retryJob(executionId: string, jobId: string): Promise<any> {
+  const res = await fetch(`${BASE}/api/v1/executions/${executionId}/jobs/${jobId}/retry`, {
+    method: 'POST',
+  });
+  if (!res.ok) throw new Error('Failed to retry job');
+  return res.json();
+}
+
+export async function skipJob(executionId: string, jobId: string): Promise<any> {
+  const res = await fetch(`${BASE}/api/v1/executions/${executionId}/jobs/${jobId}/skip`, {
+    method: 'POST',
+  });
+  if (!res.ok) throw new Error('Failed to skip job');
+  return res.json();
+}
+
+export async function restartExecution(executionId: string): Promise<any> {
+  const res = await fetch(`${BASE}/api/v1/executions/${executionId}/restart`, {
+    method: 'POST',
+  });
+  if (!res.ok) throw new Error('Failed to restart execution');
+  return res.json();
+}
+

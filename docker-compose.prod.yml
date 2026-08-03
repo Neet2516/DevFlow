@@ -1,0 +1,218 @@
+# Production Docker Compose — DevFlow
+# See docs/27-devops.md for deployment architecture.
+# Usage: docker-compose -f docker-compose.prod.yml up -d
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-devflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-devflow}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-devflow}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [devflow]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks: [devflow]
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      PIPELINE_SERVICE_URL: http://pipeline:3001
+      EXECUTION_SERVICE_URL: http://execution:3002
+      WS_SERVICE_URL: http://websocket:3003
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+    networks: [devflow]
+
+  pipeline:
+    build:
+      context: .
+      dockerfile: services/pipeline/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-devflow}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-devflow}
+    depends_on:
+      postgres: { condition: service_healthy }
+    networks: [devflow]
+
+  execution:
+    build:
+      context: .
+      dockerfile: services/execution/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3002
+      DATABASE_URL: postgresql://${POSTGRES_USER:-devflow}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-devflow}
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+    networks: [devflow]
+
+  websocket:
+    build:
+      context: .
+      dockerfile: services/websocket/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    environment:
+      NODE_ENV: production
+      WS_PORT: 3003
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      redis: { condition: service_healthy }
+    networks: [devflow]
+
+  build-worker:
+    build:
+      context: .
+      dockerfile: workers/build-worker/Dockerfile
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-devflow}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-devflow}
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+    networks: [devflow]
+
+  test-worker:
+    build:
+      context: .
+      dockerfile: workers/test-worker/Dockerfile
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-devflow}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-devflow}
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+    networks: [devflow]
+
+  deploy-worker:
+    build:
+      context: .
+      dockerfile: workers/deploy-worker/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-devflow}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-devflow}
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+    networks: [devflow]
+
+  docker-worker:
+    build:
+      context: .
+      dockerfile: workers/docker-worker/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # DinD access for docker builds
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-devflow}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-devflow}
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+    networks: [devflow]
+
+  script-worker:
+    build:
+      context: .
+      dockerfile: workers/script-worker/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-devflow}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-devflow}
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+    networks: [devflow]
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: apps/dashboard/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      VITE_API_URL: ${API_URL:-http://localhost:3000}
+      VITE_WS_URL: ${WS_URL:-ws://localhost:3003}
+    networks: [devflow]
+
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    restart: unless-stopped
+    volumes:
+      - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=30d'
+    networks: [devflow]
+
+  grafana:
+    image: grafana/grafana:10.4.3
+    restart: unless-stopped
+    ports:
+      - "3100:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-devflow}
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
+    networks: [devflow]
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  devflow:
+    driver: bridge

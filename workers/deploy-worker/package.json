@@ -1,0 +1,20 @@
+{
+  "name": "@devflow/deploy-worker",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "node dist/index.js"
+  },
+  "dependencies": {
+    "@devflow/worker": "*",
+    "@devflow/shared": "*",
+    "ioredis": "^5.3.2",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

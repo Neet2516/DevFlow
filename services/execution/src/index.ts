@@ -32,6 +32,18 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', service: 'execution' });
 });
 
+// Prometheus metrics endpoint (scrape target for Grafana/Prometheus)
+app.get('/metrics', async (_req, res) => {
+  try {
+    // Import dynamically to avoid circular dep before full build
+    const { registry } = await import('@devflow/metrics');
+    res.set('Content-Type', registry.contentType);
+    res.end(await registry.metrics());
+  } catch {
+    res.status(500).send('metrics unavailable');
+  }
+});
+
 // Trigger pipeline execution
 app.post('/api/v1/pipelines/:id/executions', async (req, res) => {
   try {
@@ -84,10 +96,153 @@ app.get('/api/v1/executions/:id', async (req, res) => {
 
 app.listen(port, () => {
   console.log(`Execution service listening on port ${port}`);
-
-  // Bootstrap event polling on the Event Bus Redis Stream
   startEventBusConsumer(redisClient, scheduler);
-
-  // Bootstrap liveness monitor sweep
   startLivenessMonitor(redisClient, scheduler);
 });
+
+// ─────────────────────────────────────────────────────────────────
+// Manual Actions (doc 33: M3 acceptance criteria)
+// ─────────────────────────────────────────────────────────────────
+
+// POST /api/v1/executions/:id/jobs/:jobId/retry  — manual retry of a terminal job
+app.post('/api/v1/executions/:id/jobs/:jobId/retry', async (req, res) => {
+  try {
+    const { id: executionId, jobId } = req.params;
+
+    const execution = await prisma.execution.findUnique({
+      where: { id: executionId },
+      include: { pipelineVersion: { include: { jobs: true } }, jobExecutions: true },
+    });
+    if (!execution) { res.status(404).json({ detail: 'Execution not found' }); return; }
+
+    const je = execution.jobExecutions.find((j) =>
+      j.jobId === jobId || j.jobId.endsWith(`_${jobId}`)
+    );
+    if (!je) { res.status(404).json({ detail: 'JobExecution not found' }); return; }
+
+    if (!['failed_terminal', 'failed', 'skipped'].includes(je.status)) {
+      res.status(409).json({ detail: `Cannot retry job in status: ${je.status}` });
+      return;
+    }
+
+    const clientJobId = je.jobId.split('_').slice(1).join('_');
+    const dagJob = (execution.pipelineVersion.dagJson as any).jobs.find((j: any) => j.id === clientJobId);
+
+    await prisma.jobExecution.update({
+      where: { id: je.id },
+      data: { status: 'pending', attempt: je.attempt + 1, finishedAt: null },
+    });
+
+    const cmd = (dagJob as any)?.cmd || `echo "Retrying ${dagJob?.name}..."; sleep 1; echo "${dagJob?.name} complete!"`;
+    await scheduler.enqueueJob(je.id, dagJob.type, {
+      pipelineId: execution.pipelineVersion.pipelineId,
+      executionId,
+      jobId: clientJobId,
+      attempt: je.attempt + 1,
+      cmd,
+    });
+
+    res.json({ message: 'Job re-queued for retry', jobExecutionId: je.id, attempt: je.attempt + 1 });
+  } catch (e: any) {
+    res.status(500).json({ detail: e.message });
+  }
+});
+
+// POST /api/v1/executions/:id/jobs/:jobId/skip  — manually skip a pending/failed job
+app.post('/api/v1/executions/:id/jobs/:jobId/skip', async (req, res) => {
+  try {
+    const { id: executionId, jobId } = req.params;
+
+    const execution = await prisma.execution.findUnique({
+      where: { id: executionId },
+      include: { pipelineVersion: { include: { jobs: true } }, jobExecutions: true },
+    });
+    if (!execution) { res.status(404).json({ detail: 'Execution not found' }); return; }
+
+    const je = execution.jobExecutions.find((j) =>
+      j.jobId === jobId || j.jobId.endsWith(`_${jobId}`)
+    );
+    if (!je) { res.status(404).json({ detail: 'JobExecution not found' }); return; }
+
+    if (['succeeded', 'skipped', 'cancelled'].includes(je.status)) {
+      res.status(409).json({ detail: `Cannot skip job in status: ${je.status}` });
+      return;
+    }
+
+    await prisma.jobExecution.update({
+      where: { id: je.id },
+      data: { status: 'skipped', finishedAt: new Date() },
+    });
+
+    // Publish skip event so dashboard updates live
+    await redisClient.xadd(
+      'job-events', '*', 'payload',
+      JSON.stringify({
+        type: 'job.skipped',
+        pipelineId: execution.pipelineVersion.pipelineId,
+        executionId,
+        jobId: je.jobId.split('_').slice(1).join('_'),
+        jobExecutionId: je.id,
+        reason: 'manual-skip',
+        sequence: Date.now(),
+        timestamp: new Date().toISOString(),
+      })
+    );
+
+    res.json({ message: 'Job skipped', jobExecutionId: je.id });
+  } catch (e: any) {
+    res.status(500).json({ detail: e.message });
+  }
+});
+
+// POST /api/v1/executions/:id/restart  — restart entire execution from scratch
+app.post('/api/v1/executions/:id/restart', async (req, res) => {
+  try {
+    const { id: executionId } = req.params;
+
+    const execution = await prisma.execution.findUnique({
+      where: { id: executionId },
+      include: { pipelineVersion: true },
+    });
+    if (!execution) { res.status(404).json({ detail: 'Execution not found' }); return; }
+
+    // Reset all job executions to pending and the execution to running
+    await prisma.jobExecution.updateMany({
+      where: { executionId },
+      data: { status: 'pending', startedAt: null, finishedAt: null, workerId: null, attempt: 1 },
+    });
+    await prisma.execution.update({
+      where: { id: executionId },
+      data: { status: 'running', finishedAt: null },
+    });
+
+    // Re-trigger by calling startExecution logic (enqueue root nodes)
+    const { startExecution } = await import('./engine/startExecution.js');
+    // Enqueue root nodes (jobs with no dependsOn) only
+    const dag = execution.pipelineVersion.dagJson as any;
+    const jobExecutions = await prisma.jobExecution.findMany({ where: { executionId } });
+
+    for (const job of dag.jobs) {
+      if (job.dependsOn.length === 0) {
+        const je = jobExecutions.find((j: any) =>
+          j.jobId === `${execution.pipelineVersionId}_${job.id}`
+        );
+        if (je) {
+          const cmd = job.cmd || `echo "Executing ${job.name}..."; sleep 1; echo "${job.name} complete!"`;
+          await scheduler.enqueueJob(je.id, job.type, {
+            pipelineId: execution.pipelineVersion.pipelineId,
+            executionId,
+            jobId: job.id,
+            attempt: 1,
+            cmd,
+          });
+        }
+      }
+    }
+
+    res.json({ message: 'Execution restarted from root', executionId });
+  } catch (e: any) {
+    res.status(500).json({ detail: e.message });
+  }
+});
+

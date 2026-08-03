@@ -6,9 +6,10 @@ import {
 } from 'lucide-react';
 import DagCanvas from './components/DagCanvas';
 import LogPanel from './components/LogPanel';
+import ActionPanel from './components/ActionPanel';
 import { useStore } from './store';
 import { useWebSocket } from './useWebSocket';
-import { fetchPipelines, fetchPipeline, fetchExecution, triggerExecution } from './api';
+import { fetchPipelines, fetchPipeline, fetchExecution, triggerExecution, restartExecution } from './api';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -356,17 +357,31 @@ function Dashboard() {
             </AnimatePresence>
           </motion.div>
 
+          {/* DAG + Action panel side-by-side or stacked */}
           <AnimatePresence mode="wait">
             {jobs.length > 0 ? (
               <motion.div
                 key="dag"
-                style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+                style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
                 <DagCanvas jobs={jobs} jobExecutions={jobExecutions} />
+                {/* Action panel floats over canvas bottom-right */}
+                {activeExecution && (
+                  <div style={{ position: 'absolute', bottom: 12, right: 12, width: 340, zIndex: 20 }}>
+                    <ActionPanel
+                      executionId={activeExecution.id}
+                      jobExecutions={jobExecutions}
+                      onActionDone={async () => {
+                        const updated = await fetchExecution(activeExecution.id);
+                        setActiveExecution(updated);
+                      }}
+                    />
+                  </div>
+                )}
               </motion.div>
             ) : (
               <motion.div
