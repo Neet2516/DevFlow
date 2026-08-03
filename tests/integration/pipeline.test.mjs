@@ -4,11 +4,8 @@
  * These are pure-logic tests requiring no running services.
  */
 
-// Import the raw JS module since this is the integration test layer
-// We test the compiled output of @devflow/graph-engine
-
 describe('DAG Validation — Integration', () => {
-  let buildDag: (dag: any) => any;
+  let buildDag;
 
   beforeAll(async () => {
     // Dynamic import to handle ESM workspace package
@@ -84,7 +81,6 @@ describe('DAG Validation — Integration', () => {
 
   it('handles empty pipeline gracefully', () => {
     const result = buildDag({ jobs: [] });
-    // Empty is valid — a pipeline with no jobs is trivially a DAG
     expect(result).toBeDefined();
   });
 
@@ -100,8 +96,8 @@ describe('DAG Validation — Integration', () => {
 });
 
 describe('State Machine Transitions — Unit', () => {
-  let isValidJobTransition: (from: any, to: any) => boolean;
-  let isValidExecutionTransition: (from: any, to: any) => boolean;
+  let isValidJobTransition;
+  let isValidExecutionTransition;
 
   beforeAll(async () => {
     const mod = await import('@devflow/shared');

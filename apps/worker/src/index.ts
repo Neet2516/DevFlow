@@ -70,9 +70,10 @@ export class WorkerRuntime {
 
   private async updateWorkerStatus(status: 'idle' | 'busy' | 'offline'): Promise<void> {
     try {
-      await prisma.worker.update({
+      await prisma.worker.upsert({
         where: { id: this.workerId },
-        data: { status },
+        update: { status, lastHeartbeat: new Date() },
+        create: { id: this.workerId, status, capacity: 1, lastHeartbeat: new Date() },
       });
     } catch (err) {
       console.error(`Failed to update status for worker [${this.workerId}]:`, err);
