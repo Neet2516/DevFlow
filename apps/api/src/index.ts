@@ -46,6 +46,11 @@ app.use('/api/v1/audit',
   createProxyMiddleware({ target: AUDIT_SERVICE_URL, changeOrigin: true })
 );
 
+// Analytics performance endpoint
+app.use('/api/v1/analytics',
+  createProxyMiddleware({ target: EXECUTION_SERVICE_URL, changeOrigin: true })
+);
+
 // 1. AI Failure Analysis route
 app.use('/api/v1/executions/:id/analysis',
   createProxyMiddleware({ target: AI_ANALYZER_SERVICE_URL, changeOrigin: true })
