@@ -7,6 +7,7 @@ import { prisma } from '@devflow/db';
 import { Scheduler } from '@devflow/scheduler';
 import { startExecution } from './engine/startExecution.js';
 import { startEventBusConsumer } from './consumers/eventBusConsumer.js';
+import { startLivenessMonitor } from './engine/livenessMonitor.js';
 import { fileURLToPath } from 'url';
 
 // Load environment variables
@@ -86,4 +87,7 @@ app.listen(port, () => {
 
   // Bootstrap event polling on the Event Bus Redis Stream
   startEventBusConsumer(redisClient, scheduler);
+
+  // Bootstrap liveness monitor sweep
+  startLivenessMonitor(redisClient, scheduler);
 });
