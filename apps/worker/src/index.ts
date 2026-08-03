@@ -1,12 +1,15 @@
 import { Worker, Job } from 'bullmq';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import { spawn } from 'child_process';
 import { DevFlowEvent, STREAMS } from '@devflow/shared';
+import { prisma } from '@devflow/db';
 
 export class WorkerRuntime {
   private worker: Worker;
   private redis: Redis;
   private workerId: string;
+  private heartbeatInterval: NodeJS.Timeout | null = null;
+  private isProcessing = false;
 
   constructor(queueName: string, redisConnection: Redis, workerId: string) {
     this.redis = redisConnection;
@@ -15,10 +18,65 @@ export class WorkerRuntime {
     this.worker = new Worker(
       queueName,
       async (job: Job) => {
-        await this.executeJob(job);
+        this.isProcessing = true;
+        await this.updateWorkerStatus('busy');
+        try {
+          await this.executeJob(job);
+        } finally {
+          this.isProcessing = false;
+          await this.updateWorkerStatus('idle');
+        }
       },
       { connection: this.redis, concurrency: 1 }
     );
+
+    // Bootstrap database check-in and heartbeat timer
+    this.initWorker();
+  }
+
+  private async initWorker(): Promise<void> {
+    try {
+      await prisma.worker.upsert({
+        where: { id: this.workerId },
+        update: {
+          status: 'idle',
+          lastHeartbeat: new Date(),
+          capacity: 1,
+        },
+        create: {
+          id: this.workerId,
+          status: 'idle',
+          lastHeartbeat: new Date(),
+          capacity: 1,
+        },
+      });
+
+      console.log(`Worker [${this.workerId}] successfully registered in DB`);
+
+      this.heartbeatInterval = setInterval(async () => {
+        try {
+          await prisma.worker.update({
+            where: { id: this.workerId },
+            data: { lastHeartbeat: new Date() },
+          });
+        } catch (err) {
+          console.error(`Worker [${this.workerId}] heartbeat failure:`, err);
+        }
+      }, 5000);
+    } catch (err) {
+      console.error(`Worker [${this.workerId}] registration failed:`, err);
+    }
+  }
+
+  private async updateWorkerStatus(status: 'idle' | 'busy' | 'offline'): Promise<void> {
+    try {
+      await prisma.worker.update({
+        where: { id: this.workerId },
+        data: { status },
+      });
+    } catch (err) {
+      console.error(`Failed to update status for worker [${this.workerId}]:`, err);
+    }
   }
 
   private async publishEvent(event: DevFlowEvent): Promise<void> {
@@ -174,6 +232,13 @@ export class WorkerRuntime {
   }
 
   async close(): Promise<void> {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
+
+    // Set status to offline on graceful shutdown
+    await this.updateWorkerStatus('offline');
     await this.worker.close();
   }
 }

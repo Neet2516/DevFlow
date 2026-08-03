@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@devflow/shared": "*",
+    "@devflow/db": "*",
     "bullmq": "^5.4.1",
     "ioredis": "^5.3.2"
   }
