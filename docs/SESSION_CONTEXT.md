@@ -90,6 +90,7 @@ DevFlow/
 - Integrated Tailwind CSS v3 & Autoprefixer engine in `@devflow/dashboard` with Vite PostCSS pipeline.
 - Refactored UI components (`DagNode`, `LogPanel`, `ActionPanel`, `Header`) with Tailwind utility classes.
 - Added `docker-compose.prod.yml` and Prometheus / Grafana provisioning.
+- Created comprehensive root `README.md` with system architecture diagrams, quickstart guides, microservices catalog, API reference table, and test instructions.
 - Verified 35/35 Jest integration & unit tests (`pipeline.test.mjs`, `ai_analyzer.test.mjs`, `github_webhook.test.mjs`, `templates_redaction.test.mjs`, `analytics_diff.test.mjs`, `cancellation.test.mjs`, `export_sandbox.test.mjs`).
 - Verified Multi-Job E2E suite (`tests/e2e/multi_job_e2e.js`) and Chaos Recovery suite (`tests/e2e/chaos_recovery_test.js`) with 100% clean passes.
 
