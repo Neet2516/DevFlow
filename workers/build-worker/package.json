@@ -1,0 +1,21 @@
+{
+  "name": "@devflow/build-worker",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "nodemon --exec ts-node src/index.ts"
+  },
+  "dependencies": {
+    "@devflow/shared": "*",
+    "@devflow/worker": "*",
+    "ioredis": "^5.3.2",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0",
+    "ts-node": "^10.9.2"
+  }
+}
