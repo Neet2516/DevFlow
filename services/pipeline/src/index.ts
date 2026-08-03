@@ -27,6 +27,54 @@ app.get('/metrics', async (_req, res) => {
   }
 });
 
+// Get Pipeline Templates
+app.get('/api/v1/templates', async (_req, res) => {
+  try {
+    const { TEMPLATES } = await import('@devflow/templates');
+    res.json(TEMPLATES);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create Pipeline from Template
+app.post('/api/v1/pipelines/from-template', async (req, res) => {
+  try {
+    const { templateId, name } = req.body;
+    const { TEMPLATES } = await import('@devflow/templates');
+    const template = TEMPLATES.find((t: any) => t.id === templateId);
+
+    if (!template) {
+      res.status(404).json({ detail: `Template "${templateId}" not found.` });
+      return;
+    }
+
+    const pipelineName = name || `${template.name} Instance`;
+
+    // Persist via transaction
+    const result = await prisma.$transaction(async (tx: any) => {
+      const pipeline = await tx.pipeline.create({ data: { name: pipelineName } });
+      const version = await tx.pipelineVersion.create({
+        data: { pipelineId: pipeline.id, dagJson: template.dag as any },
+      });
+      const jobsData = template.dag.jobs.map((job: any) => ({
+        id: `${version.id}_${job.id}`,
+        pipelineVersionId: version.id,
+        name: job.name,
+        type: job.type,
+        dependsOn: job.dependsOn.map((depId: any) => `${version.id}_${depId}`),
+        retryPolicy: job.retryPolicy as any,
+      }));
+      await tx.job.createMany({ data: jobsData });
+      return { pipelineId: pipeline.id, versionId: version.id };
+    });
+
+    res.status(201).json({ id: result.pipelineId, name: pipelineName, versionId: result.versionId, dag: template.dag });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Create Pipeline
 app.post('/api/v1/pipelines', async (req, res) => {
   try {

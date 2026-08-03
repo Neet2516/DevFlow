@@ -17,6 +17,7 @@ export interface JobDefinition {
   type: JobType;
   dependsOn: string[];
   retryPolicy: RetryPolicy;
+  cmd?: string;
   condition?: string; // Optional expression evaluated before running
 }
 

@@ -73,15 +73,17 @@ DevFlow/
 - Built `@devflow/logger` (structured JSON logging with correlation IDs).
 - Built `@devflow/auth` (JWT verification & token signing).
 - Built `@devflow/metrics` (Prometheus counters, gauges, histograms).
+- Built `@devflow/templates` (out-of-the-box pre-configured enterprise DAG templates for Node.js, Python, Go, and Java).
 - Built `services/ai-analyzer` (Event Bus consumer for automated AI Root Cause Failure Analysis & recommendations).
 - Built `services/notification` (Event Bus consumer for Slack/Discord webhook alerts).
 - Built `services/github-adapter` (GitHub webhook integration, HMAC verification, git variable extraction).
 - Built `services/audit` (Event Bus consumer for compliance audit trail, `GET /api/v1/audit`).
 - Implemented Pipeline Variable Injection Engine in `services/execution` (`startExecution.ts`).
+- Built Automated Secret Redaction Engine in `apps/worker` (`WorkerRuntime` log flusher).
 - Integrated Tailwind CSS v3 & Autoprefixer engine in `@devflow/dashboard` with Vite PostCSS pipeline.
 - Refactored UI components (`DagNode`, `LogPanel`, `ActionPanel`, `Header`) with Tailwind utility classes.
 - Added `docker-compose.prod.yml` and Prometheus / Grafana provisioning.
-- Verified 27/27 Jest integration & unit tests (`pipeline.test.mjs`, `ai_analyzer.test.mjs`, `github_webhook.test.mjs`).
+- Verified 29/29 Jest integration & unit tests (`pipeline.test.mjs`, `ai_analyzer.test.mjs`, `github_webhook.test.mjs`, `templates_redaction.test.mjs`).
 - Verified Multi-Job E2E suite (`tests/e2e/multi_job_e2e.js`) and Chaos Recovery suite (`tests/e2e/chaos_recovery_test.js`) with 100% clean passes.
 
 ---

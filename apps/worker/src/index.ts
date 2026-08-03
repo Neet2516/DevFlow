@@ -147,12 +147,21 @@ export class WorkerRuntime {
       }
     };
 
+    // Automated Secret Redaction Engine
+    const redactSecrets = (line: string): string => {
+      return line
+        .replace(/(bearer\s+)[A-Za-z0-9\-\._~\+\/]+=*/gi, '$1[REDACTED_BEARER_TOKEN]')
+        .replace(/(password|passwd|secret|api_key|apikey|private_key)=\S+/gi, '$1=[REDACTED_SECRET]')
+        .replace(/(AWS_SECRET_ACCESS_KEY|GITHUB_TOKEN|SLACK_WEBHOOK_URL)=\S+/gi, '$1=[REDACTED_SECRET]');
+    };
+
     const queueLog = (data: Buffer) => {
       const text = data.toString('utf8');
-      const lines = text.split(/\r?\n/);
-      if (lines.length > 0 && lines[lines.length - 1] === '') {
-        lines.pop();
+      const rawLines = text.split(/\r?\n/);
+      if (rawLines.length > 0 && rawLines[rawLines.length - 1] === '') {
+        rawLines.pop();
       }
+      const lines = rawLines.map(redactSecrets);
       logBuffer.push(...lines);
 
       if (!logTimer) {

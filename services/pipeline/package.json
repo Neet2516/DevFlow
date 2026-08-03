@@ -12,6 +12,7 @@
     "@devflow/db": "*",
     "@devflow/graph-engine": "*",
     "@devflow/shared": "*",
+    "@devflow/templates": "*",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "prom-client": "^15.1.3"
