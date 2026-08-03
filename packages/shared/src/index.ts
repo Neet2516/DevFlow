@@ -161,3 +161,17 @@ export type DevFlowEvent =
   | JobRetriedEvent
   | JobSkippedEvent
   | LogLineEvent;
+
+// Queue & Stream Names
+export const QUEUES = {
+  BUILD: 'build-queue',
+  TEST: 'test-queue',
+  DEPLOY: 'deploy-queue',
+  DOCKER: 'docker-queue',
+  SCRIPT: 'script-queue',
+} as const;
+
+export const STREAMS = {
+  JOB_EVENTS: 'job-events',
+} as const;
+
