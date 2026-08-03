@@ -36,7 +36,7 @@ function DagNode({ data }: NodeProps) {
 
   return (
     <motion.div
-      className={`dag-node status-${status}`}
+      className={`dag-node status-${status} relative flex flex-col min-w-[180px] p-3.5 rounded-xl border border-slate-800/80 bg-slate-900/90 backdrop-blur-md shadow-xl transition-all hover:border-blue-500/50 hover:shadow-blue-500/10`}
       initial={{ opacity: 0, scale: 0.85, y: 8 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 280, damping: 22 }}
@@ -44,12 +44,12 @@ function DagNode({ data }: NodeProps) {
       layout
     >
       {/* Top accent bar */}
-      <div className="dag-node-accent" />
+      <div className="dag-node-accent absolute top-0 left-3 right-3 h-[2px] rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-80" />
 
       <Handle type="target" position={Position.Left} />
 
-      <div className="dag-node-type">{type}</div>
-      <div className="dag-node-name">{label}</div>
+      <div className="dag-node-type text-[10px] font-bold tracking-wider uppercase text-blue-400 mb-1">{type}</div>
+      <div className="dag-node-name text-xs font-semibold text-slate-100 mb-2 truncate">{label}</div>
 
       {/* Animated status badge */}
       <AnimatePresence mode="wait">

@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..700;1,14..32,300..700&family=JetBrains+Mono:wght@400;500&display=swap');
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ─── Design Tokens ─── */
 :root {
   --bg-base:        #060810;

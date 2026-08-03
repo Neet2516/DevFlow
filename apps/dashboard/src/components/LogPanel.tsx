@@ -6,14 +6,14 @@ import { useStore } from '../store';
 // Individual animated log line
 const LogLine = memo(({ lineNumber, line }: { lineNumber: number; line: string }) => (
   <motion.div
-    className="log-row"
+    className="log-row flex items-start gap-3 font-mono text-[11.5px] py-1 px-3 border-b border-slate-800/40 hover:bg-slate-800/30 transition-colors"
     initial={{ opacity: 0, x: -10 }}
     animate={{ opacity: 1, x: 0 }}
     transition={{ duration: 0.15, ease: 'easeOut' }}
     layout
   >
-    <span className="log-num">{lineNumber}</span>
-    <span className="log-text">{line}</span>
+    <span className="log-num text-slate-500 font-medium select-none min-w-[28px] text-right">{lineNumber}</span>
+    <span className="log-text text-slate-200 leading-relaxed font-mono">{line}</span>
   </motion.div>
 ));
 
@@ -22,7 +22,6 @@ LogLine.displayName = 'LogLine';
 function LogPanel() {
   const logLines = useStore((s) => s.logLines);
 
-  // Auto-scroll via a ref managed outside motion
   const bottomRef = React.useRef<HTMLDivElement>(null);
   React.useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -30,19 +29,19 @@ function LogPanel() {
 
   return (
     <motion.div
-      className="log-panel"
+      className="log-panel border-t border-slate-800/80 bg-slate-950/90 backdrop-blur-md flex flex-col h-[220px]"
       initial={{ y: 60, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 260, damping: 28, delay: 0.1 }}
     >
-      <div className="log-panel-header">
-        <Terminal size={12} />
+      <div className="log-panel-header flex items-center gap-2 px-4 py-2.5 bg-slate-900/80 border-b border-slate-800/60 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+        <Terminal size={12} className="text-blue-400" />
         Live Output
         <AnimatePresence mode="wait">
           {logLines.length > 0 && (
             <motion.span
               key="count"
-              className="log-count"
+              className="log-count ml-auto bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full text-[10px] font-bold"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
@@ -54,17 +53,17 @@ function LogPanel() {
         </AnimatePresence>
       </div>
 
-      <div className="log-scroll">
+      <div className="log-scroll flex-1 overflow-y-auto p-1 font-mono">
         <AnimatePresence initial={false}>
           {logLines.length === 0 ? (
             <motion.div
               key="empty"
-              className="log-empty"
+              className="log-empty flex items-center justify-center gap-2 h-full text-xs text-slate-500"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <Terminal size={14} style={{ opacity: 0.4 }} />
+              <Terminal size={14} className="opacity-40" />
               Waiting for job output…
             </motion.div>
           ) : (
