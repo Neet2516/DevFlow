@@ -1,0 +1,27 @@
+{
+  "name": "@devflow/notification",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "nodemon dist/index.js",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@devflow/shared": "*",
+    "@devflow/logger": "*",
+    "ioredis": "^5.3.2",
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/node": "^20.11.24",
+    "nodemon": "^3.1.0",
+    "typescript": "^5.4.5"
+  }
+}

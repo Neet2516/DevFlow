@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { RotateCcw, SkipForward, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
-import { retryJob, skipJob, restartExecution } from '../api';
+import { RotateCcw, SkipForward, RefreshCw, ChevronDown, ChevronUp, Bot, AlertTriangle, Lightbulb } from 'lucide-react';
+import { retryJob, skipJob, restartExecution, fetchAiAnalysis } from '../api';
 
 interface JobExecution {
   id: string;
@@ -30,6 +30,19 @@ const ACTIONABLE: Record<string, string[]> = {
 export default function ActionPanel({ executionId, jobExecutions, onActionDone }: ActionPanelProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
+  const [aiAnalysis, setAiAnalysis] = useState<any | null>(null);
+
+  const hasFailedJobs = jobExecutions.some(j => j.status === 'failed_terminal' || j.status === 'failed');
+
+  useEffect(() => {
+    if (hasFailedJobs) {
+      fetchAiAnalysis(executionId).then(data => {
+        if (data) setAiAnalysis(data);
+      }).catch(() => {});
+    } else {
+      setAiAnalysis(null);
+    }
+  }, [executionId, hasFailedJobs]);
 
   const actionable = jobExecutions.filter((je) =>
     (ACTIONABLE[je.status] ?? []).length > 0
@@ -58,8 +71,41 @@ export default function ActionPanel({ executionId, jobExecutions, onActionDone }
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius-md)',
         overflow: 'hidden',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
       }}
     >
+      {/* AI Failure Root Cause Insight Banner */}
+      <AnimatePresence>
+        {aiAnalysis && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            style={{
+              background: 'linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(139,92,246,0.15) 100%)',
+              borderBottom: '1px solid rgba(239,68,68,0.3)',
+              padding: '12px 14px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 11, fontWeight: 700, color: '#f87171', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: 6 }}>
+              <Bot size={14} style={{ color: '#c084fc' }} />
+              AI Failure Root Cause Analysis
+              <span style={{ marginLeft: 'auto', background: 'rgba(239,68,68,0.2)', color: '#fca5a5', padding: '1px 7px', borderRadius: 8, fontSize: 10 }}>
+                {Math.round((aiAnalysis.confidenceScore || 0.9) * 100)}% Confidence
+              </span>
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#f8fafc', marginBottom: 4, display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+              <AlertTriangle size={13} style={{ color: '#ef4444', flexShrink: 0, marginTop: 2 }} />
+              {aiAnalysis.rootCause}
+            </div>
+            <div style={{ fontSize: 11.5, color: '#cbd5e1', display: 'flex', alignItems: 'flex-start', gap: 6, background: 'rgba(0,0,0,0.2)', padding: '6px 10px', borderRadius: 6, marginTop: 6 }}>
+              <Lightbulb size={12} style={{ color: '#fbbf24', flexShrink: 0, marginTop: 2 }} />
+              <span><strong>Recommendation:</strong> {aiAnalysis.recommendation}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <button
         onClick={() => setOpen((o) => !o)}

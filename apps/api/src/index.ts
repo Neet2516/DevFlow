@@ -13,16 +13,17 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', service: 'api-gateway' });
 });
 
-const PIPELINE_SERVICE_URL  = process.env.PIPELINE_SERVICE_URL  || 'http://localhost:3001';
-const EXECUTION_SERVICE_URL = process.env.EXECUTION_SERVICE_URL || 'http://localhost:3002';
-const WS_SERVICE_URL        = process.env.WS_SERVICE_URL        || 'http://localhost:3003';
+const PIPELINE_SERVICE_URL    = process.env.PIPELINE_SERVICE_URL    || 'http://localhost:3001';
+const EXECUTION_SERVICE_URL   = process.env.EXECUTION_SERVICE_URL   || 'http://localhost:3002';
+const WS_SERVICE_URL          = process.env.WS_SERVICE_URL          || 'http://localhost:3003';
+const AI_ANALYZER_SERVICE_URL = process.env.AI_ANALYZER_SERVICE_URL || 'http://localhost:3004';
+const NOTIF_SERVICE_URL       = process.env.NOTIF_SERVICE_URL       || 'http://localhost:3005';
 
 // POST /auth/login — issues a JWT (dev mode: no password check, just echoes sub)
 app.post('/auth/login', express.json(), async (req, res) => {
   try {
     const { email = 'user@devflow.local', sub = 'user-1' } = req.body;
     if (!process.env.JWT_SECRET) {
-      // Dev mode: return a mock token indicator
       return res.json({ token: 'dev-mode-no-jwt-secret-set', email, sub, mode: 'dev' });
     }
     const { signToken } = await import('@devflow/auth');
@@ -33,22 +34,32 @@ app.post('/auth/login', express.json(), async (req, res) => {
   }
 });
 
-// 1. Pipeline Execution trigger
+// 1. AI Failure Analysis route
+app.use('/api/v1/executions/:id/analysis',
+  createProxyMiddleware({ target: AI_ANALYZER_SERVICE_URL, changeOrigin: true })
+);
+
+// 2. Notifications audit log route
+app.use('/api/v1/notifications',
+  createProxyMiddleware({ target: NOTIF_SERVICE_URL, changeOrigin: true })
+);
+
+// 3. Pipeline Execution trigger
 app.use('/api/v1/pipelines/:id/executions',
   createProxyMiddleware({ target: EXECUTION_SERVICE_URL, changeOrigin: true })
 );
 
-// 2. Pipeline CRUD
+// 4. Pipeline CRUD
 app.use('/api/v1/pipelines',
   createProxyMiddleware({ target: PIPELINE_SERVICE_URL, changeOrigin: true })
 );
 
-// 3. Execution status + manual actions (retry / skip / restart)
+// 5. Execution status + manual actions (retry / skip / restart)
 app.use('/api/v1/executions',
   createProxyMiddleware({ target: EXECUTION_SERVICE_URL, changeOrigin: true })
 );
 
-// 4. WebSocket health passthrough (HTTP health check on WS service)
+// 6. WebSocket health passthrough
 app.use('/health/ws',
   createProxyMiddleware({ target: WS_SERVICE_URL, changeOrigin: true, pathRewrite: { '^/health/ws': '/health' } })
 );
