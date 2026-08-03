@@ -30,6 +30,7 @@ export class Scheduler {
       jobId: string;
       attempt: number;
       cmd?: string;
+      variables?: Record<string, string>;
     }
   ): Promise<void> {
     const queue = this.queues.get(type);

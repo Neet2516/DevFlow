@@ -11,7 +11,8 @@ import { PipelineDAG } from '@devflow/shared';
  */
 export async function startExecution(
   pipelineId: string,
-  scheduler: Scheduler
+  scheduler: Scheduler,
+  variables: Record<string, string> = {}
 ): Promise<string> {
   // 1. Fetch latest version of the pipeline
   const pipeline = await prisma.pipeline.findUnique({
@@ -70,6 +71,15 @@ export async function startExecution(
     jobExecMap.set(clientJobId, je);
   }
 
+  // Helper to substitute variables into command string
+  const applyVariables = (rawCmd: string): string => {
+    let result = rawCmd;
+    for (const [k, v] of Object.entries(variables)) {
+      result = result.replaceAll(`\${${k}}`, v).replaceAll(`$${k}`, v);
+    }
+    return result;
+  };
+
   // 5. Identify root nodes (zero dependencies)
   const rootJobs = dag.jobs.filter((j) => !j.dependsOn || j.dependsOn.length === 0);
 
@@ -78,7 +88,8 @@ export async function startExecution(
     const jobExecution = jobExecMap.get(job.id);
     if (!jobExecution) continue;
 
-    const cmd = (job as any).cmd || `echo "Executing ${job.name}..."; sleep 1; echo "${job.name} complete!"`;
+    let cmd = (job as any).cmd || `echo "Executing ${job.name}..."; sleep 1; echo "${job.name} complete!"`;
+    cmd = applyVariables(cmd);
 
     await scheduler.enqueueJob(jobExecution.id, job.type, {
       pipelineId,
@@ -86,6 +97,7 @@ export async function startExecution(
       jobId: job.id,
       attempt: 1,
       cmd,
+      variables,
     });
   }
 

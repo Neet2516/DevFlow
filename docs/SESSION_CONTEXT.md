@@ -75,9 +75,12 @@ DevFlow/
 - Built `@devflow/metrics` (Prometheus counters, gauges, histograms).
 - Built `services/ai-analyzer` (Event Bus consumer for automated AI Root Cause Failure Analysis & recommendations).
 - Built `services/notification` (Event Bus consumer for Slack/Discord webhook alerts).
+- Built `services/github-adapter` (GitHub webhook integration, HMAC verification, git variable extraction).
+- Built `services/audit` (Event Bus consumer for compliance audit trail, `GET /api/v1/audit`).
+- Implemented Pipeline Variable Injection Engine in `services/execution` (`startExecution.ts`).
 - Integrated AI Failure Root Cause card into Dashboard ActionPanel UI.
 - Added `docker-compose.prod.yml` and Prometheus / Grafana provisioning.
-- Verified 25/25 Jest integration & unit tests (`tests/integration/pipeline.test.mjs`, `tests/integration/ai_analyzer.test.mjs`).
+- Verified 27/27 Jest integration & unit tests (`pipeline.test.mjs`, `ai_analyzer.test.mjs`, `github_webhook.test.mjs`).
 - Verified Multi-Job E2E suite (`tests/e2e/multi_job_e2e.js`) and Chaos Recovery suite (`tests/e2e/chaos_recovery_test.js`) with 100% clean passes.
 
 ---

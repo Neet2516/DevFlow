@@ -48,8 +48,9 @@ app.get('/metrics', async (_req, res) => {
 app.post('/api/v1/pipelines/:id/executions', async (req, res) => {
   try {
     const { id } = req.params;
-    const executionId = await startExecution(id, scheduler);
-    res.status(202).json({ executionId, status: 'pending' });
+    const { variables } = req.body || {};
+    const executionId = await startExecution(id, scheduler, variables || {});
+    res.status(202).json({ executionId, status: 'pending', variables: variables || {} });
   } catch (error: any) {
     console.error('Failed to trigger execution:', error);
     res.status(500).json({

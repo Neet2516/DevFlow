@@ -18,6 +18,8 @@ const EXECUTION_SERVICE_URL   = process.env.EXECUTION_SERVICE_URL   || 'http://l
 const WS_SERVICE_URL          = process.env.WS_SERVICE_URL          || 'http://localhost:3003';
 const AI_ANALYZER_SERVICE_URL = process.env.AI_ANALYZER_SERVICE_URL || 'http://localhost:3004';
 const NOTIF_SERVICE_URL       = process.env.NOTIF_SERVICE_URL       || 'http://localhost:3005';
+const GITHUB_ADAPTER_URL      = process.env.GITHUB_ADAPTER_URL      || 'http://localhost:3006';
+const AUDIT_SERVICE_URL       = process.env.AUDIT_SERVICE_URL       || 'http://localhost:3007';
 
 // POST /auth/login — issues a JWT (dev mode: no password check, just echoes sub)
 app.post('/auth/login', express.json(), async (req, res) => {
@@ -33,6 +35,16 @@ app.post('/auth/login', express.json(), async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+
+// GitHub Webhook trigger endpoint
+app.use('/webhooks/github',
+  createProxyMiddleware({ target: GITHUB_ADAPTER_URL, changeOrigin: true })
+);
+
+// Audit trail endpoint
+app.use('/api/v1/audit',
+  createProxyMiddleware({ target: AUDIT_SERVICE_URL, changeOrigin: true })
+);
 
 // 1. AI Failure Analysis route
 app.use('/api/v1/executions/:id/analysis',
