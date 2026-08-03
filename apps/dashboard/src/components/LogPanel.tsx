@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Terminal } from 'lucide-react';
+import { Terminal, Download } from 'lucide-react';
 import { useStore } from '../store';
 
 // Individual animated log line
@@ -39,16 +39,35 @@ function LogPanel() {
         Live Output
         <AnimatePresence mode="wait">
           {logLines.length > 0 && (
-            <motion.span
-              key="count"
-              className="log-count ml-auto bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full text-[10px] font-bold"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              {logLines.length} lines
-            </motion.span>
+            <div className="ml-auto flex items-center gap-2">
+              <motion.button
+                onClick={() => {
+                  const text = logLines.map((l) => `[LINE ${l.lineNumber}] ${l.line}`).join('\n');
+                  const blob = new Blob([text], { type: 'text/plain' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `devflow-logs-${Date.now()}.txt`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                className="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-2 py-0.5 rounded text-[10px] font-semibold transition-colors"
+                title="Export Logs TXT"
+              >
+                <Download size={10} />
+                Export Logs
+              </motion.button>
+              <motion.span
+                key="count"
+                className="log-count bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                {logLines.length} lines
+              </motion.span>
+            </div>
           )}
         </AnimatePresence>
       </div>

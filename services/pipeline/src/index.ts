@@ -27,6 +27,30 @@ app.get('/metrics', async (_req, res) => {
   }
 });
 
+// Pipeline Dry-Run / Validation Sandbox
+app.post('/api/v1/pipelines/validate', async (req, res) => {
+  try {
+    const { dag } = req.body as { dag: PipelineDAG };
+    if (!dag || !Array.isArray(dag.jobs)) {
+      res.status(400).json({ isValid: false, errors: ['Pipeline DAG with an array of jobs is required.'] });
+      return;
+    }
+
+    const validation = buildDag(dag);
+    res.json({
+      isValid: validation.isValid,
+      jobCount: dag.jobs.length,
+      errors: validation.errors,
+      cycles: validation.cycles,
+      orphanedNodes: validation.orphanedNodes,
+      topologicalOrder: validation.isValid ? (validation as any).topologicalOrder || [] : [],
+      estimatedDurationMs: dag.jobs.length * 1500,
+    });
+  } catch (err: any) {
+    res.status(500).json({ isValid: false, errors: [err.message] });
+  }
+});
+
 // Get Pipeline Templates
 app.get('/api/v1/templates', async (_req, res) => {
   try {

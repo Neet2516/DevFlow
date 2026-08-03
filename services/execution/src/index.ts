@@ -117,6 +117,51 @@ app.get('/api/v1/executions/:id', async (req, res) => {
   }
 });
 
+// GET /api/v1/executions/:id/logs/export — export execution history as TXT or JSON download
+app.get('/api/v1/executions/:id/logs/export', async (req, res) => {
+  try {
+    const { id: executionId } = req.params;
+    const format = (req.query.format as string) || 'txt';
+
+    const execution = await prisma.execution.findUnique({
+      where: { id: executionId },
+      include: { pipelineVersion: true, jobExecutions: true },
+    });
+
+    if (!execution) {
+      res.status(404).json({ detail: `Execution ${executionId} not found` });
+      return;
+    }
+
+    if (format === 'json') {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="devflow-execution-${executionId}.json"`);
+      res.send(JSON.stringify(execution, null, 2));
+      return;
+    }
+
+    const plainText = [
+      `=== DevFlow Execution Log Export ===`,
+      `Execution ID: ${execution.id}`,
+      `Pipeline Version: ${execution.pipelineVersionId}`,
+      `Status: ${execution.status}`,
+      `Started At: ${execution.startedAt ? execution.startedAt.toISOString() : 'N/A'}`,
+      `Finished At: ${execution.finishedAt ? execution.finishedAt.toISOString() : 'N/A'}`,
+      ``,
+      `--- Job Executions ---`,
+      ...execution.jobExecutions.map((j: any) =>
+        `[JOB] ${j.jobId} | Status: ${j.status} | Attempt: ${j.attempt} | Worker: ${j.workerId || 'none'}`
+      ),
+    ].join('\n');
+
+    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Content-Disposition', `attachment; filename="devflow-execution-${executionId}.txt"`);
+    res.send(plainText);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Execution service listening on port ${port}`);
   startEventBusConsumer(redisClient, scheduler);
