@@ -12,13 +12,32 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', service: 'api-gateway' });
 });
 
-// Proxy middleware to forward /api/v1/pipelines to the pipeline microservice
 const PIPELINE_SERVICE_URL = process.env.PIPELINE_SERVICE_URL || 'http://localhost:3001';
+const EXECUTION_SERVICE_URL = process.env.EXECUTION_SERVICE_URL || 'http://localhost:3002';
 
+// 1. Pipeline Execution trigger route (evaluated before general pipelines CRUD)
+app.use(
+  '/api/v1/pipelines/:id/executions',
+  createProxyMiddleware({
+    target: EXECUTION_SERVICE_URL,
+    changeOrigin: true,
+  })
+);
+
+// 2. Pipeline CRUD route
 app.use(
   '/api/v1/pipelines',
   createProxyMiddleware({
     target: PIPELINE_SERVICE_URL,
+    changeOrigin: true,
+  })
+);
+
+// 3. Execution queries route
+app.use(
+  '/api/v1/executions',
+  createProxyMiddleware({
+    target: EXECUTION_SERVICE_URL,
     changeOrigin: true,
   })
 );
