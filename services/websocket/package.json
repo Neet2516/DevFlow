@@ -1,0 +1,22 @@
+{
+  "name": "@devflow/websocket",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "nodemon dist/index.js"
+  },
+  "dependencies": {
+    "@devflow/shared": "*",
+    "ioredis": "^5.3.2",
+    "ws": "^8.17.1",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.10",
+    "nodemon": "^3.1.0",
+    "typescript": "^5.4.5"
+  }
+}

@@ -106,6 +106,29 @@ app.post('/api/v1/pipelines', async (req, res) => {
   }
 });
 
+// List Pipelines
+app.get('/api/v1/pipelines', async (req, res) => {
+  try {
+    const pipelines = await prisma.pipeline.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        versions: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+      },
+    });
+    res.json(pipelines.map((p) => ({
+      id: p.id,
+      name: p.name,
+      versionId: p.versions[0]?.id,
+      dag: p.versions[0]?.dagJson,
+    })));
+  } catch (error: any) {
+    res.status(500).json({ type: 'about:blank', title: 'Internal Server Error', status: 500, detail: error.message });
+  }
+});
+
 // Get Pipeline
 app.get('/api/v1/pipelines/:id', async (req, res) => {
   try {
