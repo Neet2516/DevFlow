@@ -16,7 +16,7 @@ const DEFAULT_DAG = `{
       "name": "Build Codebase",
       "type": "build",
       "dependsOn": [],
-      "cmd": "echo \\"[BUILD] Building code...\\"; sleep 2; echo \\"[BUILD] Done.\\"",
+      "cmd": "echo \\"[BUILD] Compiling source files...\\"; echo \\"[BUILD] 42 files compiled.\\"; echo \\"[BUILD] Done!\\"",
       "retryPolicy": {
         "maxAttempts": 3,
         "backoff": { "type": "fixed", "baseMs": 1000, "maxMs": 5000 },
@@ -26,13 +26,13 @@ const DEFAULT_DAG = `{
     {
       "id": "test_job",
       "name": "Run Tests",
-      "type": "test",
+      "type": "build",
       "dependsOn": ["build_job"],
-      "cmd": "echo \\"[TEST] Running unit tests...\\"; sleep 1; echo \\"[TEST] Success.\\"",
+      "cmd": "echo \\"[TEST] Running unit tests...\\"; echo \\"[TEST] 35/35 passed!\\"",
       "retryPolicy": {
         "maxAttempts": 2,
         "backoff": { "type": "fixed", "baseMs": 1000, "maxMs": 2000 },
-        "retryableExitCodes": [1]
+        "retryableExitCodes": "any"
       }
     }
   ]
@@ -191,21 +191,35 @@ export default function RegisterPipelineModal({ isOpen, onClose }: RegisterPipel
                 {isLoadingTemplates ? (
                   <div style={{ color: 'var(--text-muted)', fontSize: 13, padding: 8 }}>Loading templates...</div>
                 ) : (
-                  <div className="template-card-grid">
-                    {templates.map((tpl) => (
-                      <div
-                        key={tpl.id}
-                        className={`template-card ${selectedTemplateId === tpl.id ? 'selected' : ''}`}
-                        onClick={() => setSelectedTemplateId(tpl.id)}
-                      >
-                        <div className="template-card-header">
-                          <span className="template-card-title">{tpl.name}</span>
-                          <span className="template-card-category">{tpl.category}</span>
+                  <>
+                    <div className="template-card-grid">
+                      {templates.map((tpl) => (
+                        <div
+                          key={tpl.id}
+                          className={`template-card ${selectedTemplateId === tpl.id ? 'selected' : ''}`}
+                          onClick={() => setSelectedTemplateId(tpl.id)}
+                        >
+                          <div className="template-card-header">
+                            <span className="template-card-title">{tpl.name}</span>
+                            <span className="template-card-category">{tpl.category}</span>
+                          </div>
+                          <div className="template-card-desc">{tpl.description}</div>
                         </div>
-                        <div className="template-card-desc">{tpl.description}</div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                    <div style={{
+                      marginTop: 10,
+                      padding: '8px 12px',
+                      borderRadius: 7,
+                      background: 'rgba(234,179,8,0.07)',
+                      border: '1px solid rgba(234,179,8,0.2)',
+                      color: 'rgba(234,179,8,0.85)',
+                      fontSize: 11.5,
+                      lineHeight: 1.5,
+                    }}>
+                      ⚠️ <strong>dev:core tip:</strong> Templates contain <code>test</code>, <code>docker</code> &amp; <code>deploy</code> job types which require dedicated workers not started by <code>npm run dev:core</code>. Those jobs will stay <em>queued</em>. Use <strong>Custom DAG</strong> with <code>"type": "build"</code> only for a full end-to-end test.
+                    </div>
+                  </>
                 )}
               </div>
             ) : (

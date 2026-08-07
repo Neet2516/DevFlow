@@ -24,7 +24,10 @@ export async function triggerExecution(pipelineId: string): Promise<{ executionI
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({}),
   });
-  if (!res.ok) throw new Error('Failed to trigger execution');
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || errorData.error || 'Failed to trigger execution');
+  }
   return res.json();
 }
 
@@ -91,7 +94,10 @@ export async function createPipelineFromTemplate(templateId: string, name?: stri
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ templateId, name }),
   });
-  if (!res.ok) throw new Error('Failed to create pipeline from template');
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || errorData.error || `Server error ${res.status}: Failed to create pipeline from template`);
+  }
   return res.json();
 }
 
