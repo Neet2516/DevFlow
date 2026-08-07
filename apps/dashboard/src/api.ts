@@ -66,5 +66,41 @@ export async function fetchAiAnalysis(executionId: string): Promise<any> {
   return res.json();
 }
 
+export async function createPipeline(name: string, dag: any): Promise<{ id: string; name: string; versionId: string }> {
+  const res = await fetch(`${BASE}/api/v1/pipelines`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, dag }),
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || errorData.errors?.join(', ') || 'Failed to create pipeline');
+  }
+  return res.json();
+}
 
+export async function fetchTemplates(): Promise<any[]> {
+  const res = await fetch(`${BASE}/api/v1/templates`);
+  if (!res.ok) throw new Error('Failed to fetch templates');
+  return res.json();
+}
 
+export async function createPipelineFromTemplate(templateId: string, name?: string): Promise<any> {
+  const res = await fetch(`${BASE}/api/v1/pipelines/from-template`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ templateId, name }),
+  });
+  if (!res.ok) throw new Error('Failed to create pipeline from template');
+  return res.json();
+}
+
+export async function deletePipeline(id: string): Promise<void> {
+  const res = await fetch(`${BASE}/api/v1/pipelines/${id}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to delete pipeline');
+  }
+}

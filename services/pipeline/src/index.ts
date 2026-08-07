@@ -250,6 +250,51 @@ app.get('/api/v1/pipelines/:id', async (req, res) => {
   }
 });
 
+// Delete Pipeline
+app.delete('/api/v1/pipelines/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const existing = await prisma.pipeline.findUnique({ where: { id } });
+    if (!existing) {
+      res.status(404).json({
+        type: 'about:blank',
+        title: 'Resource Not Found',
+        status: 404,
+        detail: `Pipeline with ID "${id}" was not found.`,
+      });
+      return;
+    }
+
+    // Cascade delete: JobExecutions → Executions → Jobs → PipelineVersions → Pipeline
+    await prisma.$transaction(async (tx: any) => {
+      const versions = await tx.pipelineVersion.findMany({ where: { pipelineId: id } });
+      const versionIds = versions.map((v: any) => v.id);
+
+      const executions = await tx.execution.findMany({
+        where: { pipelineVersionId: { in: versionIds } },
+      });
+      const executionIds = executions.map((e: any) => e.id);
+
+      await tx.jobExecution.deleteMany({ where: { executionId: { in: executionIds } } });
+      await tx.execution.deleteMany({ where: { id: { in: executionIds } } });
+      await tx.job.deleteMany({ where: { pipelineVersionId: { in: versionIds } } });
+      await tx.pipelineVersion.deleteMany({ where: { pipelineId: id } });
+      await tx.pipeline.delete({ where: { id } });
+    });
+
+    res.status(200).json({ success: true, id });
+  } catch (error: any) {
+    console.error('Error deleting pipeline:', error);
+    res.status(500).json({
+      type: 'about:blank',
+      title: 'Internal Server Error',
+      status: 500,
+      detail: error.message || 'An unexpected error occurred.',
+    });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Pipeline service listening on port ${port}`);
 });

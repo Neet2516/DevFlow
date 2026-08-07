@@ -2,14 +2,15 @@ import React, { useEffect } from 'react';
 import { motion, AnimatePresence, type Variants } from 'motion/react';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import {
-  Zap, Play, RefreshCw, GitBranch, Layers, Wifi, WifiOff, Activity, ChevronRight,
+  Zap, Play, RefreshCw, GitBranch, Layers, Wifi, WifiOff, Activity, ChevronRight, Plus, Trash2,
 } from 'lucide-react';
 import DagCanvas from './components/DagCanvas';
 import LogPanel from './components/LogPanel';
 import ActionPanel from './components/ActionPanel';
+import RegisterPipelineModal from './components/RegisterPipelineModal';
 import { useStore } from './store';
 import { useWebSocket } from './useWebSocket';
-import { fetchPipelines, fetchPipeline, fetchExecution, triggerExecution, restartExecution } from './api';
+import { fetchPipelines, fetchPipeline, fetchExecution, triggerExecution, restartExecution, deletePipeline } from './api';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -85,13 +86,27 @@ function Header() {
 
 // ─── Sidebar pipeline card ────────────────────────────────────────
 function PipelineCard({
-  pipeline, isActive, onClick, index,
+  pipeline, isActive, onClick, onDelete, index,
 }: {
   pipeline: { id: string; name: string };
   isActive: boolean;
   onClick: () => void;
+  onDelete: (id: string) => void;
   index: number;
 }) {
+  const [confirmDelete, setConfirmDelete] = React.useState(false);
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirmDelete) {
+      onDelete(pipeline.id);
+    } else {
+      setConfirmDelete(true);
+      // Auto-reset confirm state after 3s
+      setTimeout(() => setConfirmDelete(false), 3000);
+    }
+  };
+
   return (
     <motion.div
       custom={index}
@@ -103,16 +118,46 @@ function PipelineCard({
       whileHover={{ x: 3 }}
       whileTap={{ scale: 0.98 }}
       layout
+      style={{ paddingRight: 36 }}
     >
       <div className="pipeline-card-name">
         <GitBranch size={12} style={{ display: 'inline', marginRight: 7, opacity: 0.6 }} />
         {pipeline.name}
       </div>
       <div className="pipeline-card-id">#{pipeline.id.slice(-8)}</div>
-      {isActive && (
+
+      {/* Delete button — revealed on hover */}
+      <motion.button
+        onClick={handleDeleteClick}
+        title={confirmDelete ? 'Click again to confirm delete' : 'Delete pipeline'}
+        initial={{ opacity: 0, scale: 0.8 }}
+        whileHover={{ opacity: 1, scale: 1 }}
+        style={{
+          position: 'absolute',
+          right: 8,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          background: confirmDelete ? 'rgba(239,68,68,0.15)' : 'transparent',
+          border: confirmDelete ? '1px solid rgba(239,68,68,0.4)' : '1px solid transparent',
+          borderRadius: 6,
+          color: confirmDelete ? '#f87171' : 'var(--text-muted)',
+          cursor: 'pointer',
+          padding: '3px 5px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'all 0.2s ease',
+        }}
+      >
+        {confirmDelete
+          ? <span style={{ fontSize: 10, fontWeight: 700, whiteSpace: 'nowrap' }}>Sure?</span>
+          : <Trash2 size={12} />}
+      </motion.button>
+
+      {isActive && !confirmDelete && (
         <motion.div
           layoutId="active-indicator"
-          style={{ position: 'absolute', right: 10, top: '50%', color: 'var(--accent-light)' }}
+          style={{ position: 'absolute', right: 36, top: '50%', color: 'var(--accent-light)' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
@@ -170,6 +215,7 @@ function TriggerButton({ loading, onClick }: { loading: boolean; onClick: () => 
 
 // ─── Dashboard ────────────────────────────────────────────────────
 function Dashboard() {
+  const [isRegisterOpen, setIsRegisterOpen] = React.useState(false);
   const {
     pipelines, setPipelines,
     activePipelineId, setActivePipelineId,
@@ -208,6 +254,22 @@ function Dashboard() {
     clearLogs();
   };
 
+  const handleDeletePipeline = async (id: string) => {
+    try {
+      await deletePipeline(id);
+      // If we just deleted the currently-selected pipeline, clear the view
+      if (activePipelineId === id) {
+        setActivePipelineId(null);
+        setActiveExecution(null);
+        resetLiveStatuses();
+        clearLogs();
+      }
+      // Refetch the pipeline list immediately
+      queryClient.invalidateQueries({ queryKey: ['pipelines'] });
+    } catch (e) {
+      console.error('Delete failed:', e);
+    }
+  };
   const handleTrigger = async () => {
     if (!activePipelineId) return;
     setIsTriggeringExecution(true);
@@ -240,8 +302,8 @@ function Dashboard() {
           animate={{ x: 0, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 260, damping: 26 }}
         >
-          <div className="sidebar-top">
-            <div className="sidebar-label">
+          <div className="sidebar-top" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div className="sidebar-label" style={{ display: 'flex', alignItems: 'center', gap: 7, flex: 1 }}>
               <Layers size={11} />
               Pipelines
               {!isLoading && pipelines.length > 0 && (
@@ -249,7 +311,6 @@ function Dashboard() {
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   style={{
-                    marginLeft: 'auto',
                     background: 'var(--accent-glow)',
                     color: 'var(--accent-light)',
                     border: '1px solid rgba(59,130,246,0.3)',
@@ -263,6 +324,26 @@ function Dashboard() {
                 </motion.span>
               )}
             </div>
+            <motion.button
+              onClick={() => setIsRegisterOpen(true)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 24,
+                height: 24,
+                borderRadius: 'var(--radius-xs)',
+                border: '1px solid var(--border)',
+                background: 'transparent',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+              }}
+              title="Register New Pipeline"
+            >
+              <Plus size={14} />
+            </motion.button>
           </div>
 
           <div className="pipeline-list">
@@ -285,6 +366,7 @@ function Dashboard() {
                   pipeline={p}
                   isActive={activePipelineId === p.id}
                   onClick={() => selectPipeline(p.id)}
+                  onDelete={handleDeletePipeline}
                   index={i}
                 />
               ))}
@@ -297,7 +379,15 @@ function Dashboard() {
                 style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}
               >
                 No pipelines yet.<br />
-                <span style={{ fontSize: 11, opacity: 0.6 }}>POST /api/v1/pipelines to create one.</span>
+                <span style={{ fontSize: 11, opacity: 0.6, display: 'block', marginBottom: 12 }}>Create one via UI or API Gateway.</span>
+                <button
+                  onClick={() => setIsRegisterOpen(true)}
+                  className="btn btn-primary"
+                  style={{ width: '100%' }}
+                >
+                  <Plus size={13} style={{ display: 'inline', marginRight: 6, verticalAlign: 'middle' }} />
+                  Create Pipeline
+                </button>
               </motion.div>
             )}
           </div>
@@ -409,6 +499,7 @@ function Dashboard() {
           <LogPanel />
         </div>
       </div>
+      <RegisterPipelineModal isOpen={isRegisterOpen} onClose={() => setIsRegisterOpen(false)} />
     </div>
   );
 }

@@ -71,6 +71,11 @@ app.use('/api/v1/pipelines',
   createProxyMiddleware({ target: PIPELINE_SERVICE_URL, changeOrigin: true })
 );
 
+// Pipeline Templates
+app.use('/api/v1/templates',
+  createProxyMiddleware({ target: PIPELINE_SERVICE_URL, changeOrigin: true })
+);
+
 // 5. Execution status + manual actions (retry / skip / restart)
 app.use('/api/v1/executions',
   createProxyMiddleware({ target: EXECUTION_SERVICE_URL, changeOrigin: true })
