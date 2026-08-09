@@ -1,5 +1,10 @@
 # DevFlow — Distributed CI/CD Workflow Engine 🚀
 
+[![DevFlow CI](https://github.com/Neet2516/DevFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/Neet2516/DevFlow/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-blue.svg)](package.json)
+
 DevFlow is a modern, high-throughput, fault-tolerant distributed DAG workflow and CI/CD engine built with Node.js, TypeScript, Express, BullMQ, Redis Streams, PostgreSQL, and React.
 
 ---
@@ -125,6 +130,17 @@ npm run test -w @devflow/tests
 
 ---
 
+## 🤝 Contributing & Community
+
+We welcome contributions of all kinds! Please check out our open-source governance guidelines:
+
+- 📖 **[Contributing Guide](CONTRIBUTING.md)** — Development setup, monorepo architecture, and PR guidelines.
+- 📜 **[Code of Conduct](CODE_OF_CONDUCT.md)** — Community guidelines and pledges.
+- 🛡️ **[Security Policy](SECURITY.md)** — Responsible vulnerability reporting guidelines.
+
+---
+
 ## 📜 License
 
-MIT © [Neet2516](https://github.com/Neet2516)
+Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information.
+
