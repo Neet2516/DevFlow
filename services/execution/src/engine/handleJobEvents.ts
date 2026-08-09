@@ -34,7 +34,7 @@ export async function handleJobEvents(
   const dag = latestVersion.dagJson as unknown as PipelineDAG;
 
   if (event.type === 'job.started') {
-    const je = execution.jobExecutions.find((j) => j.id === event.jobExecutionId);
+    const je = execution.jobExecutions.find((j: any) => j.id === event.jobExecutionId);
     if (je && isValidJobTransition(je.status as any, 'running')) {
       await prisma.jobExecution.update({
         where: { id: je.id },
@@ -48,7 +48,7 @@ export async function handleJobEvents(
   }
 
   else if (event.type === 'job.completed') {
-    const je = execution.jobExecutions.find((j) => j.id === event.jobExecutionId);
+    const je = execution.jobExecutions.find((j: any) => j.id === event.jobExecutionId);
     if (je && isValidJobTransition(je.status as any, 'succeeded')) {
       await prisma.jobExecution.update({
         where: { id: je.id },
@@ -76,7 +76,7 @@ export async function handleJobEvents(
       });
 
       if (allTerminal) {
-        const anyFailed = updatedJobExecutions.some((j) => j.status === 'failed_terminal');
+        const anyFailed = updatedJobExecutions.some((j: any) => j.status === 'failed_terminal');
         const nextStatus = anyFailed ? 'failed' : 'succeeded';
         await prisma.execution.update({
           where: { id: executionId },
@@ -97,7 +97,7 @@ export async function handleJobEvents(
             return depStatus === 'failed_terminal' || depStatus === 'skipped';
           });
 
-          const currentJe = updatedJobExecutions.find((j) => j.jobId === `${latestVersion.id}_${job.id}`)!;
+          const currentJe = updatedJobExecutions.find((j: any) => j.jobId === `${latestVersion.id}_${job.id}`)!;
 
           if (allDepsSucceeded) {
             const cmd = (job as any).cmd || `echo "Executing ${job.name}..."; sleep 1; echo "${job.name} complete!"`;
@@ -124,7 +124,7 @@ export async function handleJobEvents(
   }
 
   else if (event.type === 'job.failed') {
-    const je = execution.jobExecutions.find((j) => j.id === event.jobExecutionId);
+    const je = execution.jobExecutions.find((j: any) => j.id === event.jobExecutionId);
     if (je && isValidJobTransition(je.status as any, 'failed')) {
       const clientJobId = je.jobId.split('_').slice(1).join('_');
       const jobDef = dag.jobs.find((j) => j.id === clientJobId)!;
