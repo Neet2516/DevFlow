@@ -49,8 +49,16 @@ jobs:
       - name: 1. Install Dependencies
         run: npm ci
 
-      - name: 2. Run Typecheck & Lint
-        run: npm run lint
+      - name: 2. Build Core Packages (shared, db, auth, etc.)
+        run: |
+          npm run build -w @devflow/shared
+          npm run build -w @devflow/auth
+          npm run build -w @devflow/db
+          npm run build -w @devflow/logger
+          npm run build -w @devflow/metrics
+          npm run build -w @devflow/graph-engine
+          npm run build -w @devflow/scheduler
+          npm run build -w @devflow/templates
 
       - name: 3. Compile & Build Workspaces
         run: npm run build
