@@ -9,33 +9,7 @@
     "skipLibCheck": true,
     "declaration": true,
     "sourceMap": true,
-    "outDir": "./dist",
-    "baseUrl": ".",
-    "paths": {
-      "@devflow/api": ["apps/api/src"],
-      "@devflow/dashboard": ["apps/dashboard/src"],
-      "@devflow/worker": ["apps/worker/src"],
-      "@devflow/auth": ["packages/auth/src"],
-      "@devflow/db": ["packages/db/src"],
-      "@devflow/graph-engine": ["packages/graph-engine/src"],
-      "@devflow/logger": ["packages/logger/src"],
-      "@devflow/metrics": ["packages/metrics/src"],
-      "@devflow/scheduler": ["packages/scheduler/src"],
-      "@devflow/shared": ["packages/shared/src"],
-      "@devflow/templates": ["packages/templates/src"],
-      "@devflow/ai-analyzer": ["services/ai-analyzer/src"],
-      "@devflow/audit": ["services/audit/src"],
-      "@devflow/execution": ["services/execution/src"],
-      "@devflow/github-adapter": ["services/github-adapter/src"],
-      "@devflow/notification": ["services/notification/src"],
-      "@devflow/pipeline": ["services/pipeline/src"],
-      "@devflow/websocket": ["services/websocket/src"],
-      "@devflow/build-worker": ["workers/build-worker/src"],
-      "@devflow/deploy-worker": ["workers/deploy-worker/src"],
-      "@devflow/docker-worker": ["workers/docker-worker/src"],
-      "@devflow/script-worker": ["workers/script-worker/src"],
-      "@devflow/test-worker": ["workers/test-worker/src"]
-    }
+    "outDir": "./dist"
   },
   "exclude": ["node_modules", "dist"]
 }
