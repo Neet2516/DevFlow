@@ -1,6 +1,6 @@
 # DevFlow — Distributed CI/CD Workflow Engine 🚀
 
-[![DevFlow CI](https://github.com/Neet2516/DevFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/Neet2516/DevFlow/actions/workflows/ci.yml)
+[![Build & Test Suite](https://github.com/Neet2516/DevFlow/actions/workflows/build-test.yml/badge.svg)](https://github.com/Neet2516/DevFlow/actions/workflows/build-test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-blue.svg)](package.json)

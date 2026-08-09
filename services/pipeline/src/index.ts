@@ -202,7 +202,7 @@ app.get('/api/v1/pipelines', async (req, res) => {
         },
       },
     });
-    res.json(pipelines.map((p) => ({
+    res.json(pipelines.map((p: any) => ({
       id: p.id,
       name: p.name,
       versionId: p.versions[0]?.id,

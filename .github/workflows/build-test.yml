@@ -1,4 +1,4 @@
-name: DevFlow CI
+name: Build & Test Suite
 
 on:
   push:
@@ -46,13 +46,24 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install Dependencies
+      - name: 1. Install Dependencies
         run: npm ci
 
-      - name: Compile & Build Workspaces
+      - name: 2. Build Core Packages (shared, db, auth, etc.)
+        run: |
+          npm run build -w @devflow/shared
+          npm run build -w @devflow/auth
+          npm run build -w @devflow/db
+          npm run build -w @devflow/logger
+          npm run build -w @devflow/metrics
+          npm run build -w @devflow/graph-engine
+          npm run build -w @devflow/scheduler
+          npm run build -w @devflow/templates
+
+      - name: 3. Compile & Build Workspaces
         run: npm run build
 
-      - name: Run Test Suite
+      - name: 4. Run Integration & Unit Test Suite
         env:
           DATABASE_URL: "postgresql://postgres:postgrespassword@localhost:5433/devflow?schema=public"
           REDIS_URL: "redis://localhost:6379"
