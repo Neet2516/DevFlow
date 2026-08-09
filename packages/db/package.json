@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "types": "src/index.ts",
   "scripts": {
     "build": "tsc",
     "db:generate": "prisma generate",
