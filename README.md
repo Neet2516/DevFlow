@@ -1,15 +1,47 @@
 # DevFlow — Distributed CI/CD Workflow Engine 🚀
 
 [![DevFlow CI](https://github.com/Neet2516/DevFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/Neet2516/DevFlow/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-41%20passing-brightgreen.svg)](https://github.com/Neet2516/DevFlow/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Contributors](https://img.shields.io/github/contributors/Neet2516/DevFlow.svg)](https://github.com/Neet2516/DevFlow/graphs/contributors)
+[![Open Issues](https://img.shields.io/github/issues/Neet2516/DevFlow.svg)](https://github.com/Neet2516/DevFlow/issues)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-blue.svg)](package.json)
 
-DevFlow is a modern, high-throughput, fault-tolerant distributed DAG workflow and CI/CD engine built with Node.js, TypeScript, Express, BullMQ, Redis Streams, PostgreSQL, and React.
+**DevFlow** is a modern, high-throughput, fault-tolerant distributed DAG (Directed Acyclic Graph) workflow engine and CI/CD orchestration platform. Built with **TypeScript**, **Node.js**, **Express**, **BullMQ**, **Redis Streams**, **PostgreSQL**, and **React**.
 
 ---
 
-## 🏛️ System Architecture
+## ⚡ Key Features
+
+- 🧠 **DAG Graph Engine (`@devflow/graph-engine`)**: Tarjan's cycle hazard detection, diamond dependency validation, and topological execution ordering.
+- ⚡ **Distributed Execution Scheduler**: Parallel job scheduling via BullMQ queues with Redis semaphores and concurrency controls.
+- 🩺 **Heartbeat Liveness Recovery**: Automatic detection of inactive or dead workers (15s heartbeat timeout) with zero-downtime job re-enqueueing.
+- 📡 **Real-Time Live Streaming Gateway**: Room-based WebSocket streaming for live stdout/stderr log output and node state transitions (`ws://localhost:3003`).
+- 🤖 **AI Root Cause Failure Analyzer**: Event-driven log parser analyzing execution failures to output root causes and actionable remediation steps (`:3004`).
+- 🛡️ **Automated Secret Masking Engine**: Built-in regex engine redacting AWS keys, Bearer tokens, passwords, and API secrets from output streams.
+- 🐙 **GitHub Adapter**: Webhook listener supporting HMAC SHA-256 signatures, branch filters, and automatic git variable injection (`COMMIT_SHA`, `BRANCH_NAME`).
+- 📊 **Performance Analytics & Version Diffing**: Real-time execution throughput analytics, step latency metrics, and structural DAG version comparisons.
+- 📑 **Enterprise Templates**: Built-in DAG workflow templates for Node.js, Python, Go, and Java Spring Boot pipelines.
+- 🎨 **Glassmorphic React Dashboard**: Modern UI powered by React 18, Vite, React Flow, Tailwind CSS v3, and Framer Motion spring animations.
+
+---
+
+## 🧰 Tech Stack
+
+| Domain | Technologies |
+| :--- | :--- |
+| **Frontend UI** | React 18, Vite, Tailwind CSS v3, Framer Motion (`motion/react`), React Flow |
+| **API Gateway & Microservices** | Node.js (v18/v20), TypeScript, Express, WebSockets (`ws`), REST APIs |
+| **Distributed Queue & State** | BullMQ, Redis Streams (v7), Redis Semaphores |
+| **Database & ORM** | PostgreSQL 15/16, Prisma ORM |
+| **Worker Runtimes** | Docker, Docker-in-Docker (DinD), Bash / Shell Execution Runtimes |
+| **Monitoring & Telemetry** | Prometheus, Grafana, Structured Logger (`@devflow/logger`) |
+| **Testing & CI** | Jest, ts-jest, GitHub Actions |
+
+---
+
+## 🏛️ System Architecture & Demo
 
 ```
                                ┌──────────────────────────┐
@@ -46,101 +78,123 @@ DevFlow is a modern, high-throughput, fault-tolerant distributed DAG workflow an
 
 ---
 
-## ✨ Features & Microservices
+## 🛠️ Installation & Setup
 
-- **DAG Engine (`@devflow/graph-engine`)**: Tarjan's cycle hazard detection, diamond DAG validation, and topological sorting.
-- **Execution Scheduler (`@devflow/scheduler`)**: BullMQ queue dispatcher with Redis semaphores.
-- **Liveness Monitor Recovery (`services/execution`)**: Heartbeat monitor that automatically detects dead workers (15s inactivity) and re-enqueues orphan jobs to standby workers.
-- **WebSocket Gateway (`services/websocket` - Port 3003)**: Room-based subscription streaming live stdout/stderr log lines and real-time node state transitions.
-- **Specialized Worker Runtime (`@devflow/worker`)**:
-  - `build-worker` (`build-queue`)
-  - `test-worker` (`test-queue`)
-  - `docker-worker` (`docker-queue`)
-  - `deploy-worker` (`deploy-queue`)
-  - `script-worker` (`script-queue`)
-- **Automated Secret Redaction**: Masking engine in worker runtime redacting Bearer tokens, AWS keys, passwords, and API secrets from output streams.
-- **AI Root Cause Analyzer (`services/ai-analyzer` - Port 3004)**: Event Bus consumer parsing job failure logs to output root causes and automated fix recommendations.
-- **Notification Service (`services/notification` - Port 3005)**: Formatted Slack/Discord/Webhook alert notifications.
-- **GitHub Adapter (`services/github-adapter` - Port 3006)**: Webhook parser with HMAC verification and git variable extraction (`COMMIT_SHA`, `BRANCH_NAME`).
-- **Compliance Audit Service (`services/audit` - Port 3007)**: Immutable audit trail API (`GET /api/v1/audit`).
-- **Pipeline Templates (`@devflow/templates`)**: Pre-configured DAG templates for Node.js, Python, Go, and Java Spring Boot pipelines.
-- **Performance Analytics**: Real-time execution throughput, success rates, active workers, and step duration latency breakdown (`GET /api/v1/analytics/performance`).
-- **DAG Version Diff Engine**: Structural comparison between pipeline versions (`diffDag`).
-- **Log Export & Dry-Run Sandbox**: TXT/JSON log attachments (`GET /logs/export`) and candidate DAG validation (`POST /pipelines/validate`).
-- **Modern UI (`apps/dashboard` - Port 5173)**: React Flow + Framer Motion (`motion/react`) spring animations + Tailwind CSS v3 glassmorphic design system.
+### Prerequisites
+- **Node.js** v18.0.0 or higher
+- **npm** v9.0.0 or higher
+- **Docker & Docker Compose** (for PostgreSQL and Redis containers)
 
----
-
-## ⚡ Quick Start
-
-### 1. Prerequisites
-- Node.js v18+
-- Docker & Docker Compose
-- PostgreSQL (default port `5433` local) & Redis (default port `6379`)
-
-### 2. Installation & Build
+### 1. Clone Repository
 ```bash
-# Install dependencies
-npm install
+git clone https://github.com/Neet2516/DevFlow.git
+cd DevFlow
+```
 
-# Build all monorepo packages and microservices
+### 2. Install Dependencies
+```bash
+npm install
+```
+
+### 3. Build All Monorepo Packages
+```bash
 npm run build
 ```
 
-### 3. Run Integration Test Suite
+---
+
+## 🔑 Environment Variables
+
+DevFlow uses a root `.env` configuration for services and local container access.
+
 ```bash
-npm run test -w @devflow/tests
+# Copy the example environment template to create your .env
+cp .env.example .env
 ```
 
-### 4. Production Stack (Docker Compose)
+Detailed environment options in [`.env.example`](.env.example):
+- `DATABASE_URL`: PostgreSQL connection string (default local port `5433`).
+- `REDIS_URL`: Redis connection string (default port `6379`).
+- `JWT_SECRET`: Secret key for API authentication & JWT generation.
+- `API_URL` & `WS_URL`: API Gateway (`:3000`) and WebSocket (`:3003`) URLs.
+- `GITHUB_WEBHOOK_SECRET`: Secret for GitHub HMAC verification.
+
+---
+
+## 💻 Running Locally
+
+### Option A: Development Stack (Local Microservices)
+
+Make sure PostgreSQL and Redis containers are running:
+```bash
+docker-compose up -d
+```
+
+- **Run All Microservices & Workers Concurrently**:
+  ```bash
+  npm run dev
+  ```
+
+- **Run Core Development Stack** (API Gateway, Pipeline, Execution, WebSocket, Dashboard, and Build Worker):
+  ```bash
+  npm run dev:core
+  ```
+
+- **Access Services**:
+  - 🖥️ **Dashboard**: `http://localhost:5173` (or `http://localhost:80` in production)
+  - 🌐 **API Gateway**: `http://localhost:3000`
+  - ⚡ **WebSocket Gateway**: `ws://localhost:3003`
+
+### Option B: Production Container Stack
+
+Run the full production monorepo stack with Docker Compose:
 ```bash
 docker-compose -f docker-compose.prod.yml up -d
 ```
 
----
+### Option C: Run Test Suites
 
-## 📡 API Reference
-
-| Endpoint | Method | Service | Description |
-| :--- | :--- | :--- | :--- |
-| `/api/v1/pipelines` | `POST` / `GET` | Pipeline (`:3001`) | Create and list pipelines |
-| `/api/v1/pipelines/validate` | `POST` | Pipeline (`:3001`) | Dry-Run Sandbox DAG validation |
-| `/api/v1/templates` | `GET` | Pipeline (`:3001`) | Fetch enterprise pipeline templates |
-| `/api/v1/pipelines/from-template` | `POST` | Pipeline (`:3001`) | Instantiate pipeline from template |
-| `/api/v1/pipelines/:id/executions` | `POST` | Execution (`:3002`) | Trigger pipeline execution |
-| `/api/v1/executions/:id` | `GET` | Execution (`:3002`) | Get execution status and job states |
-| `/api/v1/executions/:id/cancel` | `POST` | Execution (`:3002`) | Cancel running execution |
-| `/api/v1/executions/:id/restart` | `POST` | Execution (`:3002`) | Restart execution from scratch |
-| `/api/v1/executions/:id/logs/export` | `GET` | Execution (`:3002`) | Export execution logs as TXT or JSON |
-| `/api/v1/analytics/performance` | `GET` | Execution (`:3002`) | Get platform performance analytics |
-| `/api/v1/executions/:id/analysis` | `GET` | AI Analyzer (`:3004`) | Get AI failure root cause analysis |
-| `/webhooks/github` | `POST` | GitHub Adapter (`:3006`) | GitHub push/PR webhook trigger |
-| `/api/v1/audit` | `GET` | Audit (`:3007`) | Fetch compliance audit trail |
-
----
-
-## 🧪 Integration Tests
-
-The Jest integration suite validates DAG cycle detection, reactive state transitions, AI log classification, webhook payload parsing, secret redaction, DAG diffing, and cancellation logic:
-
+Run unit & integration test suites:
 ```bash
+# Run all monorepo test suites
+npm test
+
+# Run integration tests suite specifically
 npm run test -w @devflow/tests
-# Result: 35 / 35 Tests Passed (100% Green)
 ```
 
 ---
 
-## 🤝 Contributing & Community
+## 📡 API Endpoints Overview
 
-We welcome contributions of all kinds! Please check out our open-source governance guidelines:
+| Endpoint | Method | Service | Description |
+| :--- | :--- | :--- | :--- |
+| `/api/v1/pipelines` | `POST` / `GET` | Pipeline (`:3001`) | Create and list DAG pipelines |
+| `/api/v1/pipelines/validate` | `POST` | Pipeline (`:3001`) | Dry-run sandbox DAG validation |
+| `/api/v1/templates` | `GET` | Pipeline (`:3001`) | Fetch enterprise pipeline templates |
+| `/api/v1/pipelines/from-template` | `POST` | Pipeline (`:3001`) | Instantiate pipeline from template |
+| `/api/v1/pipelines/:id/executions` | `POST` | Execution (`:3002`) | Trigger pipeline execution |
+| `/api/v1/executions/:id` | `GET` | Execution (`:3002`) | Get execution status & node states |
+| `/api/v1/executions/:id/cancel` | `POST` | Execution (`:3002`) | Cancel active execution |
+| `/api/v1/executions/:id/restart` | `POST` | Execution (`:3002`) | Restart execution from scratch |
+| `/api/v1/executions/:id/logs/export` | `GET` | Execution (`:3002`) | Export execution logs (TXT/JSON) |
+| `/api/v1/analytics/performance` | `GET` | Execution (`:3002`) | Platform throughput & latency analytics |
+| `/api/v1/executions/:id/analysis` | `GET` | AI Analyzer (`:3004`) | Fetch AI root cause failure diagnosis |
+| `/webhooks/github` | `POST` | GitHub Adapter (`:3006`) | GitHub push/PR webhook parser |
+| `/api/v1/audit` | `GET` | Audit (`:3007`) | Fetch compliance audit logs |
 
-- 📖 **[Contributing Guide](CONTRIBUTING.md)** — Development setup, monorepo architecture, and PR guidelines.
-- 📜 **[Code of Conduct](CODE_OF_CONDUCT.md)** — Community guidelines and pledges.
-- 🛡️ **[Security Policy](SECURITY.md)** — Responsible vulnerability reporting guidelines.
+---
+
+## 🤝 Contributing
+
+Contributions are warmly welcome! Please review our open-source governance guidelines before submitting pull requests:
+
+- 📖 **[Contributing Guide](CONTRIBUTING.md)** — Step-by-step setup, monorepo guide & PR rules.
+- 📜 **[Code of Conduct](CODE_OF_CONDUCT.md)** — Community behavior standards.
+- 🛡️ **[Security Policy](SECURITY.md)** — Private vulnerability disclosure policy.
 
 ---
 
 ## 📜 License
 
-Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information.
-
+Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more information.
