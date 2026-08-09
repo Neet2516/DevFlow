@@ -183,7 +183,7 @@ app.post('/api/v1/executions/:id/jobs/:jobId/retry', async (req, res) => {
     });
     if (!execution) { res.status(404).json({ detail: 'Execution not found' }); return; }
 
-    const je = execution.jobExecutions.find((j) =>
+    const je = execution.jobExecutions.find((j: any) =>
       j.jobId === jobId || j.jobId.endsWith(`_${jobId}`)
     );
     if (!je) { res.status(404).json({ detail: 'JobExecution not found' }); return; }
@@ -227,7 +227,7 @@ app.post('/api/v1/executions/:id/jobs/:jobId/skip', async (req, res) => {
     });
     if (!execution) { res.status(404).json({ detail: 'Execution not found' }); return; }
 
-    const je = execution.jobExecutions.find((j) =>
+    const je = execution.jobExecutions.find((j: any) =>
       j.jobId === jobId || j.jobId.endsWith(`_${jobId}`)
     );
     if (!je) { res.status(404).json({ detail: 'JobExecution not found' }); return; }
