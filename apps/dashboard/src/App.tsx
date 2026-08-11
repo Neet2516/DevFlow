@@ -44,13 +44,6 @@ function Header() {
       transition={{ type: 'spring', stiffness: 280, damping: 26 }}
     >
       <div className="brand">
-        <motion.div
-          className="brand-icon"
-          whileHover={{ rotate: [0, -8, 8, 0], scale: 1.1 }}
-          transition={{ duration: 0.5 }}
-        >
-          ⚡
-        </motion.div>
         <span className="brand-name">DevFlow</span>
       </div>
 
