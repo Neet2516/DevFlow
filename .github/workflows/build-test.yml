@@ -2,9 +2,9 @@ name: Build & Test Suite
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, docs/update-security-policy ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, docs/update-security-policy ]
 
 jobs:
   build-and-test:
@@ -44,12 +44,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       - name: 1. Install Dependencies
-        run: npm ci
+        run: npm install
 
-      - name: 2. Build Core Packages (shared, db, auth, etc.)
+      - name: 2. Generate Prisma Client & Push DB Schema
+        env:
+          DATABASE_URL: "postgresql://postgres:postgrespassword@localhost:5433/devflow?schema=public"
+        run: |
+          npm run db:generate -w @devflow/db
+          npx prisma db push --schema=packages/db/prisma/schema.prisma --skip-generate
+
+      - name: 3. Build Core Packages
         run: |
           npm run build -w @devflow/shared
           npm run build -w @devflow/auth
@@ -60,10 +66,10 @@ jobs:
           npm run build -w @devflow/scheduler
           npm run build -w @devflow/templates
 
-      - name: 3. Compile & Build Workspaces
+      - name: 4. Compile & Build All Workspaces
         run: npm run build
 
-      - name: 4. Run Integration & Unit Test Suite
+      - name: 5. Run Integration & Unit Test Suite
         env:
           DATABASE_URL: "postgresql://postgres:postgrespassword@localhost:5433/devflow?schema=public"
           REDIS_URL: "redis://localhost:6379"
