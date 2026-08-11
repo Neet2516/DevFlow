@@ -2,14 +2,19 @@
 
 [![DevFlow CI](https://github.com/Neet2516/DevFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/Neet2516/DevFlow/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Documentation](https://img.shields.io/badge/docs-DevFlow%20Docs-black.svg)](https://devflow-docs.demo.app)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-blue.svg)](package.json)
 
 DevFlow is a modern, high-throughput, fault-tolerant distributed DAG workflow and CI/CD engine built with Node.js, TypeScript, Express, BullMQ, Redis Streams, PostgreSQL, and React.
 
+📖 **[View Live Documentation Site](https://devflow-docs.demo.app)**
+
 ---
 
 ## 🏛️ System Architecture
+
+![DevFlow Architecture Flowchart](apps/docs/public/flowchart.png)
 
 ```
                                ┌──────────────────────────┐
@@ -46,6 +51,19 @@ DevFlow is a modern, high-throughput, fault-tolerant distributed DAG workflow an
 
 ---
 
+## 📚 Documentation Site
+
+DevFlow includes a full developer documentation platform built with React, Vite, and Tailwind CSS.
+
+- **Demo URL:** [https://devflow-docs.demo.app](https://devflow-docs.demo.app)
+- **Local Dev:**
+  ```bash
+  npm run dev -w @devflow/docs
+  ```
+- **Local URL:** `http://localhost:5174`
+
+---
+
 ## ✨ Features & Microservices
 
 - **DAG Engine (`@devflow/graph-engine`)**: Tarjan's cycle hazard detection, diamond DAG validation, and topological sorting.
@@ -67,7 +85,8 @@ DevFlow is a modern, high-throughput, fault-tolerant distributed DAG workflow an
 - **Performance Analytics**: Real-time execution throughput, success rates, active workers, and step duration latency breakdown (`GET /api/v1/analytics/performance`).
 - **DAG Version Diff Engine**: Structural comparison between pipeline versions (`diffDag`).
 - **Log Export & Dry-Run Sandbox**: TXT/JSON log attachments (`GET /logs/export`) and candidate DAG validation (`POST /pipelines/validate`).
-- **Modern UI (`apps/dashboard` - Port 5173)**: React Flow + Framer Motion (`motion/react`) spring animations + Tailwind CSS v3 glassmorphic design system.
+- **Modern UI (`apps/dashboard` - Port 5173)**: React Flow + Framer Motion (`motion/react`) spring animations + Tailwind CSS v3 design system.
+- **Interactive Documentation (`apps/docs` - Port 5174)**: Production-ready documentation platform with search, dark/light theme, and live API references.
 
 ---
 
@@ -143,4 +162,3 @@ We welcome contributions of all kinds! Please check out our open-source governan
 ## 📜 License
 
 Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information.
-
