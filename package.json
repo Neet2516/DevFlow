@@ -12,6 +12,7 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
+    "lint": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "dev": "concurrently --kill-others -n gateway,pipeline,execution,websocket,dashboard,analyzer,audit,github,notif,worker-build,worker-deploy,worker-docker,worker-script,worker-test -c \"cyan,blue,magenta,yellow,green,red,gray,white,cyan,blue,magenta,yellow,green,red\" \"npm run dev -w @devflow/api\" \"npm run dev -w @devflow/pipeline\" \"npm run dev -w @devflow/execution\" \"npm run dev -w @devflow/websocket\" \"npm run dev -w @devflow/dashboard\" \"npm run dev -w @devflow/ai-analyzer\" \"npm run dev -w @devflow/audit\" \"npm run dev -w @devflow/github-adapter\" \"npm run dev -w @devflow/notification\" \"npm run dev -w @devflow/build-worker\" \"npm run dev -w @devflow/deploy-worker\" \"npm run dev -w @devflow/docker-worker\" \"npm run dev -w @devflow/script-worker\" \"npm run dev -w @devflow/test-worker\"",
     "dev:core": "concurrently --kill-others -n gateway,pipeline,execution,websocket,dashboard,worker-build -c \"cyan,blue,magenta,yellow,green,red\" \"npm run dev -w @devflow/api\" \"npm run dev -w @devflow/pipeline\" \"npm run dev -w @devflow/execution\" \"npm run dev -w @devflow/websocket\" \"npm run dev -w @devflow/dashboard\" \"npm run dev -w @devflow/build-worker\"",

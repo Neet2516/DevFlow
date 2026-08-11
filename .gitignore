@@ -7,3 +7,8 @@ dist/
 *.log
 postgres_data/
 redis_data/
+
+# Compiled build artifacts accidentally output to src/
+**/src/**/*.js
+**/src/**/*.js.map
+**/src/**/*.d.ts
