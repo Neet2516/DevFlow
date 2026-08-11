@@ -14,7 +14,6 @@ DevFlow is a modern, high-throughput, fault-tolerant distributed DAG workflow an
 
 ## 🏛️ System Architecture
 
-![DevFlow Architecture Flowchart](apps/docs/public/flowchart.png)
 
 ```
                                ┌──────────────────────────┐
