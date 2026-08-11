@@ -2,6 +2,7 @@
 
 [![DevFlow CI](https://github.com/Neet2516/DevFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/Neet2516/DevFlow/actions/workflows/ci.yml)
 [![Tests](https://img.shields.io/badge/tests-41%20passing-brightgreen.svg)](https://github.com/Neet2516/DevFlow/actions/workflows/ci.yml)
+[![Build & Test Suite](https://github.com/Neet2516/DevFlow/actions/workflows/build-test.yml/badge.svg)](https://github.com/Neet2516/DevFlow/actions/workflows/build-test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Contributors](https://img.shields.io/github/contributors/Neet2516/DevFlow.svg)](https://github.com/Neet2516/DevFlow/graphs/contributors)
 [![Open Issues](https://img.shields.io/github/issues/Neet2516/DevFlow.svg)](https://github.com/Neet2516/DevFlow/issues)
