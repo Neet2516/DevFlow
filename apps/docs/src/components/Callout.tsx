@@ -1,7 +1,7 @@
 import React from 'react';
 import { Info, Lightbulb, AlertTriangle, AlertCircle } from 'lucide-react';
 
-type CalloutType = 'note' | 'tip' | 'warning' | 'danger';
+type CalloutType = 'note' | 'tip' | 'warning' | 'danger' | 'important';
 
 interface CalloutProps {
   type?: CalloutType;
@@ -10,10 +10,11 @@ interface CalloutProps {
 }
 
 const config: Record<CalloutType, { icon: React.ReactNode; label: string; cls: string }> = {
-  note:    { icon: <Info size={16} />,          label: 'Note',      cls: 'callout-note' },
-  tip:     { icon: <Lightbulb size={16} />,     label: 'Tip',       cls: 'callout-tip' },
-  warning: { icon: <AlertTriangle size={16} />, label: 'Warning',   cls: 'callout-warn' },
-  danger:  { icon: <AlertCircle size={16} />,   label: 'Important', cls: 'callout-danger' },
+  note:      { icon: <Info size={16} />,          label: 'Note',      cls: 'callout-note' },
+  tip:       { icon: <Lightbulb size={16} />,     label: 'Tip',       cls: 'callout-tip' },
+  warning:   { icon: <AlertTriangle size={16} />, label: 'Warning',   cls: 'callout-warn' },
+  danger:    { icon: <AlertCircle size={16} />,   label: 'Important', cls: 'callout-danger' },
+  important: { icon: <AlertCircle size={16} />,   label: 'Important', cls: 'callout-danger' },
 };
 
 const Callout: React.FC<CalloutProps> = ({ type = 'note', title, children }) => {
