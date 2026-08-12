@@ -27,7 +27,7 @@ export function diffDag(dagA: PipelineDAG, dagB: PipelineDAG): DagDiffResult {
 
       if (jobA.name !== jobB.name) changes.push(`Name changed: "${jobA.name}" → "${jobB.name}"`);
       if (jobA.type !== jobB.type) changes.push(`Type changed: "${jobA.type}" → "${jobB.type}"`);
-      if (JSON.stringify(jobA.dependsOn.sort()) !== JSON.stringify(jobB.dependsOn.sort())) {
+      if (JSON.stringify([...jobA.dependsOn].sort()) !==JSON.stringify([...jobB.dependsOn].sort())) {
         changes.push(`Dependencies changed: [${jobA.dependsOn.join(', ')}] → [${jobB.dependsOn.join(', ')}]`);
       }
       if (jobA.cmd !== jobB.cmd) changes.push(`Command changed`);
