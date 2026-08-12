@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "nodemon dist/index.js"
+    "dev": "tsc && nodemon dist/index.js"
   },
   "dependencies": {
     "@devflow/shared": "*",
