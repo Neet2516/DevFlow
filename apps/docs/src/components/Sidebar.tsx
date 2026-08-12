@@ -36,7 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobile = false, onClose }) => {
       className={
         mobile
           ? 'w-full py-2'
-          : 'w-64 shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto py-4 pr-3 border-r border-[var(--border)]'
+          : 'w-full py-4 pr-3'
       }
       aria-label="MDN style documentation navigation"
     >
