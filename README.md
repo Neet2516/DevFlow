@@ -2,13 +2,13 @@
 
 [![Build & Test Suite](https://github.com/Neet2516/DevFlow/actions/workflows/build-test.yml/badge.svg)](https://github.com/Neet2516/DevFlow/actions/workflows/build-test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Documentation](https://img.shields.io/badge/docs-DevFlow%20Docs-black.svg)](https://devflow-docs.demo.app)
+[![Documentation](https://img.shields.io/badge/docs-docs--devflow.vercel.app-black.svg)](https://docs-devflow.vercel.app/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-blue.svg)](package.json)
 
 DevFlow is a modern, high-throughput, fault-tolerant distributed DAG workflow and CI/CD engine built with Node.js, TypeScript, Express, BullMQ, Redis Streams, PostgreSQL, and React.
 
-📖 **[View Live Documentation Site](https://devflow-docs.demo.app)**
+📖 **[View Live Documentation Site](https://docs-devflow.vercel.app/)**
 
 ---
 
@@ -54,7 +54,7 @@ DevFlow is a modern, high-throughput, fault-tolerant distributed DAG workflow an
 
 DevFlow includes a full developer documentation platform built with React, Vite, and Tailwind CSS.
 
-- **Demo URL:** [https://devflow-docs.demo.app](https://devflow-docs.demo.app)
+- **Live URL:** [https://docs-devflow.vercel.app](https://docs-devflow.vercel.app/)
 - **Local Dev:**
   ```bash
   npm run dev -w @devflow/docs
