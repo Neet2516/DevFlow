@@ -23,7 +23,7 @@ If you discover a security vulnerability, credential leak, or architectural safe
 4. Fill in the confidential vulnerability report form with reproduction steps and impact.
 
 ### Option B: Security Contact Email
-Send an email to **`security@devflow.org`** (or contact maintainers privately) with the title `[SECURITY] <Brief Description>`.
+Send an email to **`syncproject01@gmail.com`** (or contact maintainers privately) with the title `[SECURITY] <Brief Description>`.
 
 ---
 
