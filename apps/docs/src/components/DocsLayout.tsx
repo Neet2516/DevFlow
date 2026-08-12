@@ -46,7 +46,7 @@ const DocsLayout: React.FC = () => {
         {/* Main content area */}
         <div className="flex flex-1 pt-14">
           {/* Desktop sidebar */}
-          <div className="hidden lg:block w-64 shrink-0 border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#13161f]">
+          <div className="hidden lg:block w-64 shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#13161f]">
             <div className="px-4">
               <Sidebar />
             </div>
