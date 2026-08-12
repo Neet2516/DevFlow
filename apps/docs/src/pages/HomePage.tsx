@@ -6,25 +6,7 @@ import {
   Database, Radio, Server, Workflow,
 } from 'lucide-react';
 
-/* ── Floating chip component ──────────────────────────────── */
-const FloatingChip: React.FC<{
-  label: string;
-  icon: React.ReactNode;
-  style: React.CSSProperties;
-  delay?: number;
-}> = ({ label, icon, style, delay = 0 }) => (
-  <div
-    className="tech-chip absolute hidden lg:flex"
-    style={{
-      ...style,
-      animationDelay: `${delay}s`,
-      animation: `floatY ${3.5 + delay * 0.5}s ${delay}s ease-in-out infinite`,
-    }}
-  >
-    {icon}
-    <span>{label}</span>
-  </div>
-);
+
 
 /* ── Feature card ──────────────────────────────────────────── */
 interface FeatureDef {
@@ -141,13 +123,7 @@ const HomePage: React.FC = () => {
       {/* ╔══ HERO ═══════════════════════════════════════════════╗ */}
       <section className="hero-gradient relative overflow-hidden py-24 md:py-32 px-6 min-h-[85vh] flex items-center">
 
-        {/* Floating monochrome tech chips */}
-        <FloatingChip label="BullMQ" icon={<Workflow size={12} />} style={{ top: '14%', left: '6%' }} delay={0} />
-        <FloatingChip label="Redis Streams" icon={<Database size={12} />} style={{ top: '22%', right: '7%' }} delay={0.8} />
-        <FloatingChip label="TypeScript" icon={<Server size={12} />} style={{ bottom: '30%', left: '4%' }} delay={0.4} />
-        <FloatingChip label="React Flow" icon={<Activity size={12} />} style={{ bottom: '22%', right: '5%' }} delay={1.2} />
-        <FloatingChip label="PostgreSQL" icon={<Database size={12} />} style={{ top: '48%', left: '2%' }} delay={1.6} />
-        <FloatingChip label="WebSocket" icon={<Radio size={12} />} style={{ top: '38%', right: '3%' }} delay={2} />
+
 
         <div className="max-w-4xl mx-auto text-center w-full" ref={heroRef}>
 
@@ -180,7 +156,7 @@ const HomePage: React.FC = () => {
 
           {/* CTA buttons */}
           <div
-            className="mt-10 flex flex-wrap items-center justify-center gap-3"
+            className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-xs sm:max-w-none mx-auto"
             style={{
               opacity: heroInView ? 1 : 0,
               transform: heroInView ? 'translateY(0)' : 'translateY(16px)',
@@ -192,7 +168,7 @@ const HomePage: React.FC = () => {
               href="https://github.com/Neet2516/DevFlow"
               target="_blank"
               rel="noopener noreferrer"
-              className="group inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-sm transition-all duration-200"
+              className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-sm transition-all duration-200"
               style={{
                 background: 'var(--text)',
                 color: 'var(--bg)',
@@ -208,7 +184,7 @@ const HomePage: React.FC = () => {
             {/* Secondary CTA — API Reference */}
             <button
               onClick={() => navigate('/docs/api')}
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-sm border transition-colors duration-200"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-sm border transition-colors duration-200"
               style={{
                 borderColor: 'var(--border)',
                 color: 'var(--text)',
@@ -222,7 +198,7 @@ const HomePage: React.FC = () => {
 
           {/* Quick Start hint — non-clickable, subtle */}
           <div
-            className="mt-8 flex flex-col items-center gap-2"
+            className="mt-8 flex flex-col items-center gap-2 w-full"
             style={{
               opacity: heroInView ? 1 : 0,
               transition: 'opacity 0.6s 0.35s ease-out',
@@ -232,7 +208,7 @@ const HomePage: React.FC = () => {
               Quick Start
             </span>
             <div
-              className="flex items-center gap-3 px-5 py-2.5 rounded-lg border font-mono text-xs select-none"
+              className="flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-lg border font-mono text-xs select-none max-w-full overflow-x-auto"
               style={{
                 background: '#000',
                 borderColor: '#2a2a2a',
@@ -240,7 +216,7 @@ const HomePage: React.FC = () => {
               }}
             >
               <Terminal size={13} className="text-neutral-500 shrink-0" />
-              <span>$ npm install &amp;&amp; npm run build</span>
+              <span className="whitespace-nowrap">$ npm install &amp;&amp; npm run build</span>
             </div>
           </div>
         </div>
