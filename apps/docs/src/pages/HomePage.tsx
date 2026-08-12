@@ -8,6 +8,26 @@ import {
 
 
 
+/* ── Floating chip component (Desktop only) ────────────────── */
+const FloatingChip: React.FC<{
+  label: string;
+  icon: React.ReactNode;
+  style: React.CSSProperties;
+  delay?: number;
+}> = ({ label, icon, style, delay = 0 }) => (
+  <div
+    className="tech-chip absolute hidden lg:flex"
+    style={{
+      ...style,
+      animationDelay: `${delay}s`,
+      animation: `floatY ${3.5 + delay * 0.5}s ${delay}s ease-in-out infinite`,
+    }}
+  >
+    {icon}
+    <span>{label}</span>
+  </div>
+);
+
 /* ── Feature card ──────────────────────────────────────────── */
 interface FeatureDef {
   icon: React.ReactNode;
@@ -123,7 +143,13 @@ const HomePage: React.FC = () => {
       {/* ╔══ HERO ═══════════════════════════════════════════════╗ */}
       <section className="hero-gradient relative overflow-hidden py-24 md:py-32 px-6 min-h-[85vh] flex items-center">
 
-
+        {/* Floating monochrome tech chips (Desktop only, hidden on mobile/tablet) */}
+        <FloatingChip label="BullMQ" icon={<Workflow size={12} />} style={{ top: '14%', left: '6%' }} delay={0} />
+        <FloatingChip label="Redis Streams" icon={<Database size={12} />} style={{ top: '22%', right: '7%' }} delay={0.8} />
+        <FloatingChip label="TypeScript" icon={<Server size={12} />} style={{ bottom: '30%', left: '4%' }} delay={0.4} />
+        <FloatingChip label="React Flow" icon={<Activity size={12} />} style={{ bottom: '22%', right: '5%' }} delay={1.2} />
+        <FloatingChip label="PostgreSQL" icon={<Database size={12} />} style={{ top: '48%', left: '2%' }} delay={1.6} />
+        <FloatingChip label="WebSocket" icon={<Radio size={12} />} style={{ top: '38%', right: '3%' }} delay={2} />
 
         <div className="max-w-4xl mx-auto text-center w-full" ref={heroRef}>
 
