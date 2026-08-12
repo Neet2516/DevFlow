@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   GitBranch, Activity, Shield, Cpu, Layers, Zap,
-  ArrowRight, Terminal, Github, Copy, Check,
+  ArrowRight, Terminal, Github,
   Database, Radio, Server, Workflow,
 } from 'lucide-react';
 
@@ -126,7 +126,6 @@ const useInView = (threshold = 0.15): [React.RefObject<HTMLDivElement>, boolean]
 ══════════════════════════════════════════════════════════════ */
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const [copied, setCopied] = useState(false);
 
   const [heroRef, heroInView] = useInView(0.05);
   const [featRef, featInView] = useInView(0.1);
@@ -135,12 +134,6 @@ const HomePage: React.FC = () => {
   const [quickRef, quickInView] = useInView(0.15);
 
   useEffect(() => { document.title = 'DevFlow — Distributed CI/CD Workflow Engine'; }, []);
-
-  const copy = async () => {
-    await navigator.clipboard.writeText('git clone https://github.com/Neet2516/DevFlow.git && cd DevFlow && npm install && npm run build');
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   return (
     <div className="min-h-screen pt-14 overflow-x-hidden">
@@ -187,16 +180,19 @@ const HomePage: React.FC = () => {
 
           {/* CTA buttons */}
           <div
-            className="mt-10 flex flex-wrap items-center justify-center gap-4"
+            className="mt-10 flex flex-wrap items-center justify-center gap-3"
             style={{
               opacity: heroInView ? 1 : 0,
               transform: heroInView ? 'translateY(0)' : 'translateY(16px)',
               transition: 'opacity 0.6s 0.2s ease-out, transform 0.6s 0.2s ease-out',
             }}
           >
-            <button
-              onClick={() => navigate('/docs/introduction')}
-              className="group inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-semibold text-sm transition-all duration-200"
+            {/* Primary CTA — GitHub */}
+            <a
+              href="https://github.com/Neet2516/DevFlow"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-sm transition-all duration-200"
               style={{
                 background: 'var(--text)',
                 color: 'var(--bg)',
@@ -204,13 +200,15 @@ const HomePage: React.FC = () => {
                 boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
               }}
             >
-              Get Started
-              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-            </button>
+              <Github size={16} />
+              View on GitHub
+              <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5 opacity-70" />
+            </a>
 
+            {/* Secondary CTA — API Reference */}
             <button
               onClick={() => navigate('/docs/api')}
-              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-semibold text-sm border transition-colors duration-200"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-sm border transition-colors duration-200"
               style={{
                 borderColor: 'var(--border)',
                 color: 'var(--text)',
@@ -218,41 +216,31 @@ const HomePage: React.FC = () => {
               }}
             >
               API Reference
+              <ArrowRight size={14} className="opacity-50" />
             </button>
-
-            <a
-              href="https://github.com/Neet2516/DevFlow"
-              target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl font-medium text-sm transition-colors duration-200"
-              style={{ color: 'var(--text-muted)' }}
-            >
-              <Github size={17} />
-              GitHub
-            </a>
           </div>
 
-          {/* Terminal quick-install */}
+          {/* Quick Start hint — non-clickable, subtle */}
           <div
-            className="mt-10 flex items-center justify-center"
+            className="mt-8 flex flex-col items-center gap-2"
             style={{
               opacity: heroInView ? 1 : 0,
-              transition: 'opacity 0.6s 0.3s ease-out',
+              transition: 'opacity 0.6s 0.35s ease-out',
             }}
           >
-            <div className="flex items-center gap-3 px-5 py-3 rounded-xl border max-w-lg w-full font-mono text-xs"
+            <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+              Quick Start
+            </span>
+            <div
+              className="flex items-center gap-3 px-5 py-2.5 rounded-lg border font-mono text-xs select-none"
               style={{
-                background: '#000000',
-                borderColor: '#333333',
-                color: '#ffffff',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-              }}>
-              <Terminal size={14} className="text-neutral-400 shrink-0" />
-              <span className="flex-1 text-left truncate">
-                npm install &amp;&amp; npm run build
-              </span>
-              <button onClick={copy} className="shrink-0 text-neutral-400 hover:text-white transition-colors">
-                {copied ? <Check size={14} className="text-white" /> : <Copy size={14} />}
-              </button>
+                background: '#000',
+                borderColor: '#2a2a2a',
+                color: '#e5e5e5',
+              }}
+            >
+              <Terminal size={13} className="text-neutral-500 shrink-0" />
+              <span>$ npm install &amp;&amp; npm run build</span>
             </div>
           </div>
         </div>

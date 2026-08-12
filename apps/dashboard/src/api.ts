@@ -82,10 +82,42 @@ export async function createPipeline(name: string, dag: any): Promise<{ id: stri
   return res.json();
 }
 
+const FALLBACK_TEMPLATES = [
+  {
+    id: 'nodejs-full-stack',
+    name: 'Node.js Full Stack CI/CD',
+    category: 'Node.js',
+    description: 'Complete build, unit test, docker build, database migration script, and production deployment pipeline.',
+  },
+  {
+    id: 'python-microservice',
+    name: 'Python FastAPI Pipeline',
+    category: 'Python',
+    description: 'Pytest suite, Docker image creation, and staging deployment.',
+  },
+  {
+    id: 'go-binary-release',
+    name: 'Go Cloud-Native Release',
+    category: 'Go',
+    description: 'Go unit tests, cross-compilation binary build, and production release.',
+  },
+  {
+    id: 'java-spring-enterprise',
+    name: 'Java Spring Boot Enterprise',
+    category: 'Java',
+    description: 'Maven build, JUnit tests, Docker image build, and K8s rollout.',
+  },
+];
+
 export async function fetchTemplates(): Promise<any[]> {
-  const res = await fetch(`${BASE}/api/v1/templates`);
-  if (!res.ok) throw new Error('Failed to fetch templates');
-  return res.json();
+  try {
+    const res = await fetch(`${BASE}/api/v1/templates`);
+    if (!res.ok) return FALLBACK_TEMPLATES;
+    const data = await res.json();
+    return Array.isArray(data) && data.length > 0 ? data : FALLBACK_TEMPLATES;
+  } catch {
+    return FALLBACK_TEMPLATES;
+  }
 }
 
 export async function createPipelineFromTemplate(templateId: string, name?: string): Promise<any> {
