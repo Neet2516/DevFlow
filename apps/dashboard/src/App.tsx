@@ -209,6 +209,7 @@ function TriggerButton({ loading, onClick }: { loading: boolean; onClick: () => 
 // ─── Dashboard ────────────────────────────────────────────────────
 function Dashboard() {
   const [isRegisterOpen, setIsRegisterOpen] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState("");
   const {
     pipelines, setPipelines,
     activePipelineId, setActivePipelineId,
@@ -282,6 +283,14 @@ function Dashboard() {
   const dag = pipelineDetail?.dag || pipelineDetail?.versions?.[0]?.dagJson;
   const jobs: any[] = dag?.jobs ?? [];
   const jobExecutions = activeExecution?.jobExecutions ?? [];
+    const filteredPipelines = pipelines.filter((pipeline) => {
+    const query = searchQuery.toLowerCase().trim();
+
+    return (
+      pipeline.name.toLowerCase().includes(query) ||
+      pipeline.id.toLowerCase().includes(query)
+    );
+  });
 
   return (
     <div className="app-shell">
@@ -339,7 +348,60 @@ function Dashboard() {
             </motion.button>
           </div>
 
-          <div className="pipeline-list">
+                    <div className="pipeline-list">
+            {/* Pipeline search */}
+            <div
+              style={{
+                position: 'sticky',
+                top: 0,
+                zIndex: 10,
+                padding: '8px',
+                background: 'var(--bg-secondary)',
+              }}
+            >
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="text"
+                  placeholder="Search pipelines..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    padding: '8px 32px 8px 10px',
+                    borderRadius: 6,
+                    border: '1px solid var(--border)',
+                    background: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    outline: 'none',
+                    fontSize: 12,
+                  }}
+                />
+
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    aria-label="Clear search"
+                    style={{
+                      position: 'absolute',
+                      right: 8,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      border: 'none',
+                      background: 'transparent',
+                      color: 'var(--text-muted)',
+                      cursor: 'pointer',
+                      fontSize: 14,
+                      padding: 0,
+                    }}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
+
             {isLoading && (
               <div style={{ padding: 16, color: 'var(--text-muted)', fontSize: 13, display: 'flex', gap: 8, alignItems: 'center' }}>
                 <motion.span
@@ -353,7 +415,7 @@ function Dashboard() {
             )}
 
             <AnimatePresence>
-              {pipelines.map((p, i) => (
+              {filteredPipelines.map((p, i) => (
                 <PipelineCard
                   key={p.id}
                   pipeline={p}
@@ -364,6 +426,20 @@ function Dashboard() {
                 />
               ))}
             </AnimatePresence>
+            {!isLoading && pipelines.length > 0 && filteredPipelines.length === 0 && (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    style={{
+      padding: '24px 16px',
+      textAlign: 'center',
+      color: 'var(--text-muted)',
+      fontSize: 13,
+    }}
+  >
+    No matching pipelines.
+  </motion.div>
+)}
 
             {!isLoading && pipelines.length === 0 && (
               <motion.div
